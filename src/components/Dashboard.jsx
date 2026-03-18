@@ -2,12 +2,6 @@ import { useState } from 'react'
 
 const VIEW_PREF_KEY = 'headset_view_layout'
 
-const conditionColors = {
-  Excellent: 'bg-emerald-100 text-emerald-700',
-  Good: 'bg-blue-100 text-blue-700',
-  Fair: 'bg-yellow-100 text-yellow-700',
-  Poor: 'bg-red-100 text-red-700',
-}
 
 function HeadsetIcon({ className }) {
   return (
@@ -172,9 +166,6 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                           <div className="text-slate-500 text-sm">{headset.model}</div>
                         </div>
                       </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${conditionColors[headset.condition]}`}>
-                        {headset.condition}
-                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
