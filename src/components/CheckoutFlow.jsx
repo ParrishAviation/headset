@@ -195,7 +195,6 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                   {[
                     { value: 'credit_card', label: 'Credit / Debit Card', icon: '💳' },
                     { value: 'cash', label: 'Cash', icon: '💵' },
-                    { value: 'app', label: 'Mobile Payment (Venmo / Zelle)', icon: '📱' },
                   ].map(opt => (
                     <div key={opt.value}>
                       <button
@@ -347,7 +346,6 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                 <SummaryRow label="Payment" value={{
                   credit_card: 'Credit / Debit Card',
                   cash: 'Cash (Staff Authorized)',
-                  app: 'Mobile Payment'
                 }[paymentMethod]} />
                 <div className="border-t border-slate-200 pt-3 mt-3">
                   <SummaryRow label="Rental Fee" value={`$${headset.fee.toFixed(2)}`} highlight />
