@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 function HeadsetIcon({ className }) {
@@ -28,17 +28,23 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
 
   // Apple Wallet state
   const [applePayConfirmed, setApplePayConfirmed] = useState(false)
-  const applePayUrl = `https://pay.apple.com/qr?amount=${headset.fee.toFixed(2)}&label=${encodeURIComponent('Flight School Headset Rental')}&id=${headset.id}`
+  const [showApplePayAuth, setShowApplePayAuth] = useState(false)
+  const [applePayPassword, setApplePayPassword] = useState('')
+  const [applePayPasswordError, setApplePayPasswordError] = useState('')
+  // QR code encodes a Venmo-style deep link; swap for a real Stripe payment link in production
+  const applePayUrl = `https://applepay.apple.com/pay?merchant=FlightSchoolHeadsetRental&amount=${headset.fee.toFixed(2)}&currency=USD`
 
-  // Start polling when Apple Wallet is selected
-  useEffect(() => {
-    if (paymentMethod !== 'apple_wallet' || applePayConfirmed) return
-    // Simulate payment webhook completing after ~12 seconds
-    const timer = setTimeout(() => {
+  const handleApplePayAuth = () => {
+    if (applePayPassword === STAFF_PASSWORD) {
       setApplePayConfirmed(true)
-    }, 12000)
-    return () => clearTimeout(timer)
-  }, [paymentMethod])
+      setShowApplePayAuth(false)
+      setApplePayPassword('')
+      setApplePayPasswordError('')
+    } else {
+      setApplePayPasswordError('Incorrect password. Please try again.')
+      setApplePayPassword('')
+    }
+  }
 
   const validateDetails = () => {
     const e = {}
@@ -77,6 +83,9 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
     setCashPasswordError('')
     setShowCashAuth(value === 'cash')
     setApplePayConfirmed(false)
+    setShowApplePayAuth(false)
+    setApplePayPassword('')
+    setApplePayPasswordError('')
   }
 
   const handleCashAuth = () => {
@@ -324,35 +333,75 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
 
                       {/* Apple Wallet QR panel */}
                       {opt.value === 'apple_wallet' && paymentMethod === 'apple_wallet' && !applePayConfirmed && (
-                        <div className="mt-2 bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
-                          <div className="flex items-center gap-2">
-                            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white flex-shrink-0" fill="currentColor">
-                              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                            </svg>
-                            <p className="text-white font-semibold text-sm">Scan with iPhone Camera to Pay</p>
-                          </div>
-                          <div className="flex justify-center">
-                            <div className="bg-white p-3 rounded-xl">
-                              <QRCodeSVG
-                                value={applePayUrl}
-                                size={180}
-                                bgColor="#ffffff"
-                                fgColor="#000000"
-                                level="M"
-                              />
+                        <div className="mt-2 space-y-2">
+                          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+                            <div className="flex items-center gap-2">
+                              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white flex-shrink-0" fill="currentColor">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                              </svg>
+                              <p className="text-white font-semibold text-sm">Scan with iPhone Camera to Pay</p>
+                            </div>
+                            <div className="flex justify-center">
+                              <div className="bg-white p-3 rounded-xl">
+                                <QRCodeSVG
+                                  value={applePayUrl}
+                                  size={180}
+                                  bgColor="#ffffff"
+                                  fgColor="#000000"
+                                  level="M"
+                                />
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-slate-400 text-xs mb-1">Amount due</div>
+                              <div className="text-white text-2xl font-bold">${headset.fee.toFixed(2)}</div>
                             </div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-slate-400 text-xs mb-1">Amount due</div>
-                            <div className="text-white text-2xl font-bold">${headset.fee.toFixed(2)}</div>
-                          </div>
-                          <div className="flex items-center justify-center gap-2 py-1">
-                            <svg className="w-4 h-4 text-slate-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                            </svg>
-                            <span className="text-slate-400 text-xs">Waiting for payment confirmation…</span>
-                          </div>
+
+                          {/* Staff confirmation */}
+                          {!showApplePayAuth ? (
+                            <button
+                              onClick={() => setShowApplePayAuth(true)}
+                              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-slate-300 bg-white hover:border-slate-400 transition-colors text-slate-700 font-semibold text-sm"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                              Staff: Confirm Payment Received
+                            </button>
+                          ) : (
+                            <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 space-y-3">
+                              <p className="text-slate-700 font-semibold text-sm">Enter staff password to confirm payment</p>
+                              <input
+                                type="password"
+                                value={applePayPassword}
+                                onChange={e => { setApplePayPassword(e.target.value); setApplePayPasswordError('') }}
+                                onKeyDown={e => e.key === 'Enter' && handleApplePayAuth()}
+                                placeholder="Staff password"
+                                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+                                  applePayPasswordError ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                                }`}
+                                autoFocus
+                              />
+                              {applePayPasswordError && (
+                                <p className="text-red-600 text-xs font-medium">{applePayPasswordError}</p>
+                              )}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => { setShowApplePayAuth(false); setApplePayPassword(''); setApplePayPasswordError('') }}
+                                  className="flex-1 text-sm border border-slate-300 text-slate-600 px-3 py-2 rounded-lg hover:bg-white transition-colors font-medium"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={handleApplePayAuth}
+                                  className="flex-1 text-sm bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg transition-colors font-semibold"
+                                >
+                                  Confirm
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
