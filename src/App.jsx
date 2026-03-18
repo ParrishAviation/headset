@@ -4,6 +4,7 @@ import CheckoutFlow from './components/CheckoutFlow'
 import CheckinFlow from './components/CheckinFlow'
 import AdminPanel from './components/AdminPanel'
 import CoursesPanel from './components/CoursesPanel'
+import StudentPortal from './components/StudentPortal'
 import './index.css'
 
 const INITIAL_HEADSETS = [
@@ -145,6 +146,7 @@ export default function App() {
           onCheckin={handleCheckin}
           onAdmin={() => setScreen('admin')}
           onCourses={() => setScreen('courses')}
+          onStudentPortal={() => setScreen('student')}
         />
       )}
       {screen === 'checkout' && (
@@ -171,6 +173,13 @@ export default function App() {
           courses={courses}
           enrollments={enrollments}
           onAddCourse={handleAddCourse}
+          onBack={() => setScreen('dashboard')}
+        />
+      )}
+      {screen === 'student' && (
+        <StudentPortal
+          enrollments={enrollments}
+          courses={courses}
           onBack={() => setScreen('dashboard')}
         />
       )}

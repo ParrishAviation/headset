@@ -37,7 +37,7 @@ function ListIcon({ className }) {
   )
 }
 
-export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, onCheckin, onAdmin, onCourses }) {
+export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, onCheckin, onAdmin, onCourses, onStudentPortal }) {
   const [tab, setTab] = useState('available')
   const [layout, setLayout] = useState(() => localStorage.getItem(VIEW_PREF_KEY) || 'grid')
 
@@ -75,6 +75,15 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
             <div className="text-sky-200 text-xs uppercase tracking-wider">Rental Fee</div>
             <div className="text-2xl font-bold text-white">${rentalFee.toFixed(2)}</div>
           </div>
+          <button
+            onClick={onStudentPortal}
+            className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+            Student Portal
+          </button>
           <button
             onClick={onCourses}
             className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
