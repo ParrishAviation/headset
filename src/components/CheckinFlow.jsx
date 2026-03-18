@@ -144,15 +144,24 @@ export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                Notes <span className="text-slate-400 font-normal">(optional)</span>
+                Notes{condition === 'Damaged'
+                  ? <span className="text-red-500 ml-1">*</span>
+                  : <span className="text-slate-400 font-normal ml-1">(optional)</span>}
               </label>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="Any issues, damage, or notes about the headset..."
+                placeholder={condition === 'Damaged' ? 'Describe the damage in detail...' : 'Any notes about the headset...'}
                 rows={3}
-                className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+                className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 resize-none ${
+                  condition === 'Damaged' && !notes.trim()
+                    ? 'border-red-400 bg-red-50 focus:ring-red-400'
+                    : 'border-slate-300 focus:ring-sky-500'
+                }`}
               />
+              {condition === 'Damaged' && !notes.trim() && (
+                <p className="text-red-500 text-xs mt-1 font-medium">Please describe the damage before completing the return.</p>
+              )}
             </div>
           </div>
 
@@ -191,9 +200,9 @@ export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
             </button>
             <button
               onClick={handleReturn}
-              disabled={!confirmed || !condition}
+              disabled={!confirmed || !condition || (condition === 'Damaged' && !notes.trim())}
               className={`flex-1 font-semibold py-4 rounded-xl transition-colors text-base ${
-                confirmed && condition
+                confirmed && condition && !(condition === 'Damaged' && !notes.trim())
                   ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
