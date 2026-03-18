@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard'
 import CheckoutFlow from './components/CheckoutFlow'
 import CheckinFlow from './components/CheckinFlow'
 import AdminPanel from './components/AdminPanel'
+import CoursesPanel from './components/CoursesPanel'
 import './index.css'
 
 const INITIAL_HEADSETS = [
@@ -14,6 +15,14 @@ const INITIAL_HEADSETS = [
   { id: 'HS-06', name: 'Headset 06', model: 'David Clark H10-13.4', status: 'available', condition: 'Fair' },
 ]
 
+const INITIAL_COURSES = [
+  { id: 'C-01', name: 'Private Pilot License (PPL)', duration: '40–60 flight hours', description: 'Foundation course covering basic flight maneuvers, navigation, and solo flight.' },
+  { id: 'C-02', name: 'Instrument Rating (IR)', duration: '50 flight hours', description: 'Advanced training for flying in low-visibility and instrument meteorological conditions.' },
+  { id: 'C-03', name: 'Commercial Pilot License (CPL)', duration: '200 flight hours', description: 'Professional certification to fly for compensation or hire.' },
+  { id: 'C-04', name: 'Multi-Engine Rating', duration: '10–15 flight hours', description: 'Training to operate aircraft with more than one engine.' },
+  { id: 'C-05', name: 'Flight Instructor (CFI)', duration: '25 flight hours', description: 'Certification to teach and train student pilots.' },
+]
+
 const RENTAL_FEE = 15.00
 
 export default function App() {
@@ -23,6 +32,8 @@ export default function App() {
   const [selectedHeadset, setSelectedHeadset] = useState(null)
   const [selectedRental, setSelectedRental] = useState(null)
   const [transactions, setTransactions] = useState([])
+  const [courses, setCourses] = useState(INITIAL_COURSES)
+  const [enrollments, setEnrollments] = useState([])
 
   const handleCheckout = (headsetId) => {
     const headset = headsets.find(h => h.id === headsetId)
@@ -93,6 +104,36 @@ export default function App() {
     setScreen('dashboard')
   }
 
+  const handleEnroll = ({ studentName, studentId, courseId }) => {
+    const enrollment = {
+      id: `E-${Date.now()}`,
+      studentName,
+      studentId,
+      courseId,
+      status: 'enrolled',
+      enrolledAt: new Date(),
+      completedAt: null,
+    }
+    setEnrollments(prev => [...prev, enrollment])
+    return enrollment
+  }
+
+  const handleGraduate = (enrollmentId) => {
+    let updated = null
+    setEnrollments(prev => prev.map(e => {
+      if (e.id === enrollmentId) {
+        updated = { ...e, status: 'completed', completedAt: new Date() }
+        return updated
+      }
+      return e
+    }))
+    return updated
+  }
+
+  const handleAddCourse = (course) => {
+    setCourses(prev => [...prev, { ...course, id: `C-${Date.now()}` }])
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans">
       {screen === 'dashboard' && (
@@ -103,6 +144,7 @@ export default function App() {
           onCheckout={handleCheckout}
           onCheckin={handleCheckin}
           onAdmin={() => setScreen('admin')}
+          onCourses={() => setScreen('courses')}
         />
       )}
       {screen === 'checkout' && (
@@ -126,6 +168,18 @@ export default function App() {
           headsets={headsets}
           rentals={rentals}
           transactions={transactions}
+          courses={courses}
+          enrollments={enrollments}
+          onAddCourse={handleAddCourse}
+          onBack={() => setScreen('dashboard')}
+        />
+      )}
+      {screen === 'courses' && (
+        <CoursesPanel
+          courses={courses}
+          enrollments={enrollments}
+          onEnroll={handleEnroll}
+          onGraduate={handleGraduate}
           onBack={() => setScreen('dashboard')}
         />
       )}
