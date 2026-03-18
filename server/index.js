@@ -30,7 +30,7 @@ app.post('/api/square/payment-link', async (req, res) => {
   }
 
   try {
-    const response = await square.checkout.createPaymentLink({
+    const response = await square.checkout.paymentLinks.create({
       idempotencyKey: uuidv4(),
       order: {
         locationId: SQUARE_LOCATION_ID,
@@ -57,7 +57,7 @@ app.post('/api/square/payment-link', async (req, res) => {
       },
     })
 
-    const link = response.paymentLink
+    const link = response.paymentLink ?? response
     res.json({
       checkoutUrl: link.url,
       orderId: link.orderId,
@@ -76,8 +76,8 @@ app.get('/api/square/payment-status/:orderId', async (req, res) => {
   const { orderId } = req.params
 
   try {
-    const response = await square.orders.retrieveOrder(orderId)
-    const order = response.order
+    const response = await square.orders.get(orderId)
+    const order = response.order ?? response
     const paid = order?.state === 'COMPLETED'
     res.json({ paid, status: order?.state ?? 'UNKNOWN' })
   } catch (err) {
