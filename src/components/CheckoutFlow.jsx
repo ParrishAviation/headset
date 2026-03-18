@@ -11,7 +11,7 @@ function HeadsetIcon({ className }) {
 
 const STEPS = ['Details', 'Payment', 'Agreement', 'Confirm']
 
-export default function CheckoutFlow({ headset, rentalFee, onConfirm, onCancel }) {
+export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState({ renterName: '', studentId: '', phone: '' })
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -101,7 +101,7 @@ export default function CheckoutFlow({ headset, rentalFee, onConfirm, onCancel }
               <div className="text-slate-500">{headset.model}</div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-sky-700">${rentalFee.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-sky-700">${headset.fee.toFixed(2)}</div>
               <div className="text-slate-500 text-sm">rental fee</div>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function CheckoutFlow({ headset, rentalFee, onConfirm, onCancel }
               <h2 className="text-lg font-bold text-slate-800">Payment</h2>
               <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 flex items-center justify-between">
                 <span className="text-sky-700 font-medium">Total Due</span>
-                <span className="text-2xl font-bold text-sky-700">${rentalFee.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-sky-700">${headset.fee.toFixed(2)}</span>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-3">
@@ -210,7 +210,7 @@ export default function CheckoutFlow({ headset, rentalFee, onConfirm, onCancel }
                 <p><strong>2. Proper Use:</strong> You agree to use the headset only for its intended aviation purpose, handle it with care, and return it in the same condition it was provided.</p>
                 <p><strong>3. Damage Policy:</strong> In the event of damage, you will be liable for the full cost of repair or replacement. The replacement value of a headset ranges from $200 to $1,100 depending on the model.</p>
                 <p><strong>4. Return Obligation:</strong> You agree to return the headset to the flight school desk at the end of your rental period. Failure to return equipment may result in additional charges and loss of rental privileges.</p>
-                <p><strong>5. Rental Fee:</strong> The non-refundable rental fee of <strong>${rentalFee.toFixed(2)}</strong> has been collected. This fee covers a single rental session.</p>
+                <p><strong>5. Rental Fee:</strong> The non-refundable rental fee of <strong>${headset.fee.toFixed(2)}</strong> has been collected. This fee covers a single rental session.</p>
                 <p><strong>6. Hygienic Use:</strong> You agree to clean the headset ear pads prior to and after use to maintain hygiene standards for all users.</p>
               </div>
               <button
@@ -253,7 +253,7 @@ export default function CheckoutFlow({ headset, rentalFee, onConfirm, onCancel }
                   app: 'Mobile Payment'
                 }[paymentMethod]} />
                 <div className="border-t border-slate-200 pt-3 mt-3">
-                  <SummaryRow label="Rental Fee" value={`$${rentalFee.toFixed(2)}`} highlight />
+                  <SummaryRow label="Rental Fee" value={`$${headset.fee.toFixed(2)}`} highlight />
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
                   <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

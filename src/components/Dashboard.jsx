@@ -37,7 +37,7 @@ function ListIcon({ className }) {
   )
 }
 
-export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, onCheckin, onAdmin }) {
+export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, onAdmin }) {
   const [tab, setTab] = useState('available')
   const [layout, setLayout] = useState(() => localStorage.getItem(VIEW_PREF_KEY) || 'grid')
 
@@ -72,8 +72,8 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <div className="text-sky-200 text-xs uppercase tracking-wider">Rental Fee</div>
-            <div className="text-2xl font-bold text-white">${rentalFee.toFixed(2)}</div>
+            <div className="text-sky-200 text-xs uppercase tracking-wider">Rental Fees</div>
+            <div className="text-sm font-semibold text-white">Lightspeed $10 · David Clark $5</div>
           </div>
           <button
             onClick={onAdmin}
@@ -184,7 +184,7 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
                       onClick={() => onCheckout(headset.id)}
                       className="w-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
                     >
-                      Rent This Headset — ${rentalFee.toFixed(2)}
+                      Rent This Headset — ${headset.fee.toFixed(2)}
                     </button>
                   </div>
                 ))}

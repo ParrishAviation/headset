@@ -6,15 +6,11 @@ import AdminPanel from './components/AdminPanel'
 import './index.css'
 
 const INITIAL_HEADSETS = [
-  { id: 'HS-01', name: 'Headset 01', model: 'David Clark H10-13.4', status: 'available', condition: 'Good' },
-  { id: 'HS-02', name: 'Headset 02', model: 'David Clark H10-13.4', status: 'available', condition: 'Good' },
-  { id: 'HS-03', name: 'Headset 03', model: 'Lightspeed Zulu 3', status: 'available', condition: 'Excellent' },
-  { id: 'HS-04', name: 'Headset 04', model: 'Lightspeed Zulu 3', status: 'available', condition: 'Good' },
-  { id: 'HS-05', name: 'Headset 05', model: 'Bose A20', status: 'available', condition: 'Excellent' },
-  { id: 'HS-06', name: 'Headset 06', model: 'David Clark H10-13.4', status: 'available', condition: 'Fair' },
+  { id: 'HS-01', name: 'Lightspeed Zulu A', model: 'Lightspeed Zulu 3', status: 'available', condition: 'Excellent', fee: 10.00 },
+  { id: 'HS-02', name: 'Lightspeed Zulu B', model: 'Lightspeed Zulu 3', status: 'available', condition: 'Good', fee: 10.00 },
+  { id: 'HS-03', name: 'David Clark A', model: 'David Clark H10-13.4', status: 'available', condition: 'Good', fee: 5.00 },
+  { id: 'HS-04', name: 'David Clark B', model: 'David Clark H10-13.4', status: 'available', condition: 'Good', fee: 5.00 },
 ]
-
-const RENTAL_FEE = 15.00
 
 export default function App() {
   const [screen, setScreen] = useState('dashboard')
@@ -45,7 +41,7 @@ export default function App() {
       ...rentalData,
       checkoutTime: new Date(),
       status: 'active',
-      fee: RENTAL_FEE,
+      fee: selectedHeadset.fee,
     }
     setRentals(prev => [...prev, rental])
     setHeadsets(prev =>
@@ -61,7 +57,7 @@ export default function App() {
       rentalId: rental.id,
       headsetId: selectedHeadset.id,
       renterName: rentalData.renterName,
-      amount: RENTAL_FEE,
+      amount: selectedHeadset.fee,
       time: new Date(),
     }])
     setSelectedHeadset(null)
@@ -99,7 +95,6 @@ export default function App() {
         <Dashboard
           headsets={headsets}
           rentals={rentals}
-          rentalFee={RENTAL_FEE}
           onCheckout={handleCheckout}
           onCheckin={handleCheckin}
           onAdmin={() => setScreen('admin')}
@@ -108,7 +103,6 @@ export default function App() {
       {screen === 'checkout' && (
         <CheckoutFlow
           headset={selectedHeadset}
-          rentalFee={RENTAL_FEE}
           onConfirm={confirmCheckout}
           onCancel={cancelFlow}
         />
