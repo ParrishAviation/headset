@@ -31,17 +31,36 @@ function GradCapIcon({ className }) {
   )
 }
 
+function toDateInputValue(date) {
+  const d = new Date(date)
+  return d.toISOString().split('T')[0]
+}
+
 function EnrollModal({ courses, onEnroll, onClose }) {
   const [name, setName] = useState('')
   const [studentId, setStudentId] = useState('')
   const [courseId, setCourseId] = useState(courses[0]?.id || '')
+  const [targetDate, setTargetDate] = useState(() => {
+    const d = new Date()
+    const defaultWeeks = courses[0]?.durationWeeks ?? 12
+    d.setDate(d.getDate() + defaultWeeks * 7)
+    return toDateInputValue(d)
+  })
   const [error, setError] = useState('')
+
+  const handleCourseChange = (id) => {
+    setCourseId(id)
+    const course = courses.find(c => c.id === id)
+    const d = new Date()
+    d.setDate(d.getDate() + (course?.durationWeeks ?? 12) * 7)
+    setTargetDate(toDateInputValue(d))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!name.trim()) { setError('Student name is required'); return }
     if (!courseId) { setError('Please select a course'); return }
-    onEnroll({ studentName: name.trim(), studentId: studentId.trim(), courseId })
+    onEnroll({ studentName: name.trim(), studentId: studentId.trim(), courseId, targetGraduationDate: targetDate })
   }
 
   return (
@@ -75,13 +94,24 @@ function EnrollModal({ courses, onEnroll, onClose }) {
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">Course *</label>
             <select
               value={courseId}
-              onChange={e => setCourseId(e.target.value)}
+              onChange={e => handleCourseChange(e.target.value)}
               className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white"
             >
               {courses.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Target Graduation Date</label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={e => setTargetDate(e.target.value)}
+              min={toDateInputValue(new Date())}
+              className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+            />
+            <p className="text-slate-400 text-xs mt-1">Auto-set based on course length — adjust as needed</p>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex gap-3 pt-2">
@@ -100,14 +130,14 @@ function EnrollModal({ courses, onEnroll, onClose }) {
   )
 }
 
-export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduate, onBack }) {
+export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduate, onUpdateLessons, onBack }) {
   const [tab, setTab] = useState('enrollments')
   const [showEnrollModal, setShowEnrollModal] = useState(false)
-  const [certificate, setCertificate] = useState(null) // { type: 'enrollment'|'graduation', enrollment, course }
+  const [certificate, setCertificate] = useState(null)
 
-  const handleEnroll = ({ studentName, studentId, courseId }) => {
+  const handleEnroll = ({ studentName, studentId, courseId, targetGraduationDate }) => {
     const course = courses.find(c => c.id === courseId)
-    const enrollment = onEnroll({ studentName, studentId, courseId })
+    const enrollment = onEnroll({ studentName, studentId, courseId, targetGraduationDate })
     setShowEnrollModal(false)
     setCertificate({ type: 'enrollment', enrollment, course })
   }
@@ -121,6 +151,7 @@ export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduat
   }
 
   const getCourseName = (courseId) => courses.find(c => c.id === courseId)?.name || courseId
+  const getCourse = (courseId) => courses.find(c => c.id === courseId)
 
   const activeEnrollments = enrollments.filter(e => e.status !== 'completed')
   const completedEnrollments = enrollments.filter(e => e.status === 'completed')
@@ -205,8 +236,10 @@ export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduat
                   <EnrollmentCard
                     key={e.id}
                     enrollment={e}
+                    course={getCourse(e.courseId)}
                     courseName={getCourseName(e.courseId)}
                     onGraduate={() => handleGraduate(e.id)}
+                    onUpdateLessons={(n) => onUpdateLessons(e.id, n)}
                     onViewCert={() => {
                       const course = courses.find(c => c.id === e.courseId)
                       setCertificate({ type: 'enrollment', enrollment: e, course })
@@ -231,6 +264,7 @@ export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduat
                   <EnrollmentCard
                     key={e.id}
                     enrollment={e}
+                    course={getCourse(e.courseId)}
                     courseName={getCourseName(e.courseId)}
                     completed
                     onViewCert={() => {
@@ -257,7 +291,7 @@ export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduat
                     </div>
                     <div>
                       <div className="font-bold text-slate-800">{c.name}</div>
-                      <div className="text-slate-400 text-xs">{c.duration}</div>
+                      <div className="text-slate-400 text-xs">{c.duration} · {c.totalLessons} lessons</div>
                     </div>
                   </div>
                   <p className="text-slate-500 text-sm">{c.description}</p>
@@ -292,42 +326,81 @@ export default function CoursesPanel({ courses, enrollments, onEnroll, onGraduat
   )
 }
 
-function EnrollmentCard({ enrollment, courseName, completed, onGraduate, onViewCert }) {
-  const formatDate = (d) => new Date(d).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })
+function EnrollmentCard({ enrollment, course, courseName, completed, onGraduate, onUpdateLessons, onViewCert }) {
+  const formatDate = (d) => new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+
+  const total = course?.totalLessons ?? 0
+  const done = enrollment.lessonsCompleted ?? 0
+  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${completed ? 'bg-emerald-50' : 'bg-sky-50'}`}>
-        <GradCapIcon className={`w-5 h-5 ${completed ? 'text-emerald-600' : 'text-sky-600'}`} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-slate-800">{enrollment.studentName}</span>
-          {enrollment.studentId && (
-            <span className="text-xs text-slate-400 font-medium">{enrollment.studentId}</span>
-          )}
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[enrollment.status]}`}>
-            {STATUS_LABELS[enrollment.status]}
-          </span>
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+      {/* Top row */}
+      <div className="flex items-start gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${completed ? 'bg-emerald-50' : 'bg-sky-50'}`}>
+          <GradCapIcon className={`w-5 h-5 ${completed ? 'text-emerald-600' : 'text-sky-600'}`} />
         </div>
-        <div className="text-slate-500 text-sm mt-0.5">{courseName}</div>
-        <div className="text-slate-400 text-xs mt-0.5">
-          Enrolled {formatDate(enrollment.enrolledAt)}
-          {enrollment.completedAt && ` · Graduated ${formatDate(enrollment.completedAt)}`}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-slate-800">{enrollment.studentName}</span>
+            {enrollment.studentId && (
+              <span className="text-xs text-slate-400 font-medium">{enrollment.studentId}</span>
+            )}
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[enrollment.status]}`}>
+              {STATUS_LABELS[enrollment.status]}
+            </span>
+          </div>
+          <div className="text-slate-500 text-sm mt-0.5">{courseName}</div>
+          <div className="text-slate-400 text-xs mt-0.5">
+            Enrolled {formatDate(enrollment.enrolledAt)}
+            {enrollment.targetGraduationDate && !completed && (
+              <> · Target: {formatDate(enrollment.targetGraduationDate)}</>
+            )}
+            {enrollment.completedAt && ` · Graduated ${formatDate(enrollment.completedAt)}`}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <button onClick={onViewCert}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-          {completed ? 'Grad Certificate' : 'Enrollment Cert'}
-        </button>
-        {!completed && onGraduate && (
-          <button onClick={onGraduate}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
-            Mark Graduated
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={onViewCert}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+            {completed ? 'Grad Certificate' : 'Enrollment Cert'}
           </button>
-        )}
+          {!completed && onGraduate && (
+            <button onClick={onGraduate}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+              Mark Graduated
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Progress row — instructor can update lessons */}
+      {!completed && total > 0 && (
+        <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center gap-4">
+          <div className="flex-1">
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span>Lessons completed</span>
+              <span className="font-semibold text-slate-700">{done} / {total}</span>
+            </div>
+            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-2 rounded-full transition-all bg-sky-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => onUpdateLessons(Math.max(0, done - 1))}
+              className="w-7 h-7 rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center font-bold text-base transition-colors"
+            >−</button>
+            <span className="w-8 text-center text-sm font-bold text-slate-700">{done}</span>
+            <button
+              onClick={() => onUpdateLessons(Math.min(total, done + 1))}
+              className="w-7 h-7 rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center font-bold text-base transition-colors"
+            >+</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

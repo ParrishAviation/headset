@@ -39,6 +39,26 @@ function BookOpenIcon({ className }) {
   )
 }
 
+// Returns { weeksLeft, lessonsLeft, perWeek, isLate, daysLeft }
+function calcPace(enrollment, course) {
+  if (!enrollment.targetGraduationDate || !course) return null
+  const total = course.totalLessons ?? 0
+  const done = enrollment.lessonsCompleted ?? 0
+  const remaining = Math.max(0, total - done)
+  const now = new Date()
+  const target = new Date(enrollment.targetGraduationDate)
+  const msLeft = target - now
+  const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
+  const weeksLeft = msLeft / (1000 * 60 * 60 * 24 * 7)
+
+  if (weeksLeft <= 0) {
+    return { weeksLeft: 0, lessonsLeft: remaining, perWeek: null, isLate: true, daysLeft }
+  }
+
+  const perWeek = Math.ceil(remaining / weeksLeft)
+  return { weeksLeft: Math.floor(weeksLeft), lessonsLeft: remaining, perWeek, isLate: false, daysLeft }
+}
+
 // ─── Login screen ────────────────────────────────────────────────────────────
 function LoginScreen({ enrollments, onLogin, onBack }) {
   const [query, setQuery] = useState('')
@@ -59,14 +79,12 @@ function LoginScreen({ enrollments, onLogin, onBack }) {
       return
     }
 
-    // Use first match to get student identity
     const { studentName, studentId } = matches[0]
     onLogin({ studentName, studentId })
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 flex flex-col">
-      {/* Back */}
       <div className="p-6">
         <button onClick={onBack}
           className="flex items-center gap-2 text-sky-300 hover:text-white transition-colors text-sm font-medium">
@@ -79,7 +97,6 @@ function LoginScreen({ enrollments, onLogin, onBack }) {
 
       <div className="flex-1 flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-sm">
-          {/* Logo */}
           <div className="flex flex-col items-center mb-10">
             <div className="w-16 h-16 bg-sky-500/20 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-sky-400/30">
               <PlaneIcon className="w-8 h-8 text-sky-300" />
@@ -88,7 +105,6 @@ function LoginScreen({ enrollments, onLogin, onBack }) {
             <p className="text-sky-300 text-sm mt-1">Student Portal</p>
           </div>
 
-          {/* Card */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 ring-1 ring-white/10">
             <h2 className="text-white font-semibold text-lg mb-1">View your schedule</h2>
             <p className="text-sky-300 text-sm mb-6">Enter your full name or student ID to continue</p>
@@ -105,9 +121,7 @@ function LoginScreen({ enrollments, onLogin, onBack }) {
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-sky-400/60 focus:outline-none focus:ring-2 focus:ring-sky-400 text-sm"
                   autoFocus
                 />
-                {error && (
-                  <p className="mt-2 text-red-300 text-xs">{error}</p>
-                )}
+                {error && <p className="mt-2 text-red-300 text-xs">{error}</p>}
               </div>
               <button type="submit"
                 className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-3 rounded-xl transition-colors text-sm">
@@ -137,8 +151,10 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
   const formatDate = (d) =>
     new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
-  const progress = myEnrollments.length === 0 ? 0 :
-    Math.round((completed.length / myEnrollments.length) * 100)
+  // Overall lesson progress across all active courses
+  const totalLessons = active.reduce((s, e) => s + (getCourse(e.courseId)?.totalLessons ?? 0), 0)
+  const doneLessons = active.reduce((s, e) => s + (e.lessonsCompleted ?? 0), 0)
+  const overallPct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
@@ -155,9 +171,7 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
           <div className="text-right">
             <div className="text-sky-200 text-xs uppercase tracking-wider">Logged in as</div>
             <div className="text-white font-semibold">{student.studentName}</div>
-            {student.studentId && (
-              <div className="text-sky-300 text-xs">{student.studentId}</div>
-            )}
+            {student.studentId && <div className="text-sky-300 text-xs">{student.studentId}</div>}
           </div>
           <button onClick={onLogout}
             className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -176,16 +190,13 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
           <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
           <span className="text-slate-600 text-sm font-medium">{completed.length} Completed</span>
         </div>
-        {myEnrollments.length > 0 && (
+        {active.length > 0 && totalLessons > 0 && (
           <div className="flex items-center gap-3 ml-auto">
             <span className="text-slate-500 text-sm">Overall progress</span>
             <div className="w-32 bg-slate-200 rounded-full h-2">
-              <div
-                className="bg-sky-500 h-2 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="bg-sky-500 h-2 rounded-full transition-all" style={{ width: `${overallPct}%` }} />
             </div>
-            <span className="text-slate-700 text-sm font-semibold">{progress}%</span>
+            <span className="text-slate-700 text-sm font-semibold">{overallPct}%</span>
           </div>
         )}
       </div>
@@ -200,11 +211,10 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Active courses */}
             {active.length > 0 && (
               <section>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Active Courses</h2>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {active.map(e => {
                     const course = getCourse(e.courseId)
                     return (
@@ -221,11 +231,10 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
               </section>
             )}
 
-            {/* Completed courses */}
             {completed.length > 0 && (
               <section>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Completed Courses</h2>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[...completed].reverse().map(e => {
                     const course = getCourse(e.courseId)
                     return (
@@ -258,63 +267,146 @@ function ScheduleScreen({ student, myEnrollments, courses, onLogout }) {
   )
 }
 
+// ─── Course card ─────────────────────────────────────────────────────────────
 function CourseCard({ enrollment, course, formatDate, completed, onViewCert }) {
+  const total = course?.totalLessons ?? 0
+  const done = enrollment.lessonsCompleted ?? 0
+  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
+  const pace = !completed ? calcPace(enrollment, course) : null
+
+  // Pace banner color
+  const paceBg = pace
+    ? pace.isLate
+      ? 'bg-red-50 border-red-200'
+      : pace.perWeek <= 2
+        ? 'bg-emerald-50 border-emerald-200'
+        : pace.perWeek <= 4
+          ? 'bg-amber-50 border-amber-200'
+          : 'bg-orange-50 border-orange-200'
+    : ''
+
+  const paceText = pace
+    ? pace.isLate
+      ? 'text-red-700'
+      : pace.perWeek <= 2
+        ? 'text-emerald-700'
+        : pace.perWeek <= 4
+          ? 'text-amber-700'
+          : 'text-orange-700'
+    : ''
+
   return (
-    <div className={`bg-white rounded-2xl border p-5 flex items-start gap-4 transition-shadow hover:shadow-md ${
+    <div className={`bg-white rounded-2xl border overflow-hidden transition-shadow hover:shadow-md ${
       completed ? 'border-emerald-200' : 'border-slate-200'
     }`}>
-      {/* Icon */}
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-        completed ? 'bg-emerald-50' : 'bg-sky-50'
-      }`}>
-        {completed
-          ? <GradCapIcon className="w-5 h-5 text-emerald-600" />
-          : <BookOpenIcon className="w-5 h-5 text-sky-600" />
-        }
-      </div>
-
-      {/* Details */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-slate-800">{course?.name ?? 'Unknown Course'}</span>
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[enrollment.status]}`}>
-            {STATUS_LABELS[enrollment.status]}
-          </span>
+      {/* Main info row */}
+      <div className="p-5 flex items-start gap-4">
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${completed ? 'bg-emerald-50' : 'bg-sky-50'}`}>
+          {completed
+            ? <GradCapIcon className="w-5 h-5 text-emerald-600" />
+            : <BookOpenIcon className="w-5 h-5 text-sky-600" />
+          }
         </div>
 
-        {course?.description && (
-          <p className="text-slate-500 text-sm mt-1">{course.description}</p>
-        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-slate-800">{course?.name ?? 'Unknown Course'}</span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[enrollment.status]}`}>
+              {STATUS_LABELS[enrollment.status]}
+            </span>
+          </div>
 
-        <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs text-slate-400">
-          {course?.duration && (
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              {course.duration}
-            </span>
+          {course?.description && (
+            <p className="text-slate-500 text-sm mt-1">{course.description}</p>
           )}
-          <span>Enrolled {formatDate(enrollment.enrolledAt)}</span>
-          {enrollment.completedAt && (
-            <span className="text-emerald-600 font-medium">
-              Graduated {formatDate(enrollment.completedAt)}
-            </span>
-          )}
+
+          <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs text-slate-400">
+            {course?.duration && (
+              <span className="flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                {course.duration}
+              </span>
+            )}
+            <span>Enrolled {formatDate(enrollment.enrolledAt)}</span>
+            {!completed && enrollment.targetGraduationDate && (
+              <span>Target: {formatDate(enrollment.targetGraduationDate)}</span>
+            )}
+            {enrollment.completedAt && (
+              <span className="text-emerald-600 font-medium">
+                Graduated {formatDate(enrollment.completedAt)}
+              </span>
+            )}
+          </div>
         </div>
+
+        <button
+          onClick={onViewCert}
+          className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+            completed
+              ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+              : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          {completed ? 'Graduation Cert' : 'Enrollment Cert'}
+        </button>
       </div>
 
-      {/* Certificate button */}
-      <button
-        onClick={onViewCert}
-        className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
-          completed
-            ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
-            : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-        }`}
-      >
-        {completed ? 'Graduation Cert' : 'Enrollment Cert'}
-      </button>
+      {/* Progress section — only for active courses with lesson data */}
+      {!completed && total > 0 && (
+        <div className="px-5 pb-5 space-y-3">
+          {/* Lesson progress bar */}
+          <div>
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span>Lesson progress</span>
+              <span className="font-semibold text-slate-700">{done} of {total} lessons completed ({pct}%)</span>
+            </div>
+            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-3 rounded-full transition-all ${
+                  pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-sky-500' : pct >= 30 ? 'bg-amber-400' : 'bg-sky-400'
+                }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Pace banner */}
+          {pace && (
+            <div className={`rounded-xl border px-4 py-3 ${paceBg}`}>
+              {pace.isLate ? (
+                <div className={`text-sm font-semibold ${paceText}`}>
+                  ⚠ Target graduation date has passed — {pace.lessonsLeft} lesson{pace.lessonsLeft !== 1 ? 's' : ''} remaining. Contact your instructor to update your schedule.
+                </div>
+              ) : pace.lessonsLeft === 0 ? (
+                <div className="text-sm font-semibold text-emerald-700">
+                  ✓ All lessons complete — ask your instructor to mark you graduated!
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className={`text-xl font-bold ${paceText}`}>
+                      {pace.perWeek} lesson{pace.perWeek !== 1 ? 's' : ''} / week
+                    </div>
+                    <div className={`text-xs mt-0.5 ${paceText} opacity-80`}>
+                      needed to graduate on time
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-slate-600 text-sm">
+                      <span className="font-semibold text-slate-800">{pace.lessonsLeft}</span> lessons left
+                    </div>
+                    <div className="text-slate-400 text-xs">
+                      {pace.weeksLeft} week{pace.weeksLeft !== 1 ? 's' : ''} · {pace.daysLeft} days remaining
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

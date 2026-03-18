@@ -17,11 +17,11 @@ const INITIAL_HEADSETS = [
 ]
 
 const INITIAL_COURSES = [
-  { id: 'C-01', name: 'Private Pilot License (PPL)', duration: '40–60 flight hours', description: 'Foundation course covering basic flight maneuvers, navigation, and solo flight.' },
-  { id: 'C-02', name: 'Instrument Rating (IR)', duration: '50 flight hours', description: 'Advanced training for flying in low-visibility and instrument meteorological conditions.' },
-  { id: 'C-03', name: 'Commercial Pilot License (CPL)', duration: '200 flight hours', description: 'Professional certification to fly for compensation or hire.' },
-  { id: 'C-04', name: 'Multi-Engine Rating', duration: '10–15 flight hours', description: 'Training to operate aircraft with more than one engine.' },
-  { id: 'C-05', name: 'Flight Instructor (CFI)', duration: '25 flight hours', description: 'Certification to teach and train student pilots.' },
+  { id: 'C-01', name: 'Private Pilot License (PPL)', duration: '40–60 flight hours', description: 'Foundation course covering basic flight maneuvers, navigation, and solo flight.', totalLessons: 40, durationWeeks: 16 },
+  { id: 'C-02', name: 'Instrument Rating (IR)', duration: '50 flight hours', description: 'Advanced training for flying in low-visibility and instrument meteorological conditions.', totalLessons: 50, durationWeeks: 20 },
+  { id: 'C-03', name: 'Commercial Pilot License (CPL)', duration: '200 flight hours', description: 'Professional certification to fly for compensation or hire.', totalLessons: 80, durationWeeks: 52 },
+  { id: 'C-04', name: 'Multi-Engine Rating', duration: '10–15 flight hours', description: 'Training to operate aircraft with more than one engine.', totalLessons: 12, durationWeeks: 6 },
+  { id: 'C-05', name: 'Flight Instructor (CFI)', duration: '25 flight hours', description: 'Certification to teach and train student pilots.', totalLessons: 25, durationWeeks: 12 },
 ]
 
 const RENTAL_FEE = 15.00
@@ -105,7 +105,10 @@ export default function App() {
     setScreen('dashboard')
   }
 
-  const handleEnroll = ({ studentName, studentId, courseId }) => {
+  const handleEnroll = ({ studentName, studentId, courseId, targetGraduationDate }) => {
+    const course = courses.find(c => c.id === courseId)
+    const defaultTarget = new Date()
+    defaultTarget.setDate(defaultTarget.getDate() + (course?.durationWeeks ?? 12) * 7)
     const enrollment = {
       id: `E-${Date.now()}`,
       studentName,
@@ -114,9 +117,17 @@ export default function App() {
       status: 'enrolled',
       enrolledAt: new Date(),
       completedAt: null,
+      lessonsCompleted: 0,
+      targetGraduationDate: targetGraduationDate ? new Date(targetGraduationDate) : defaultTarget,
     }
     setEnrollments(prev => [...prev, enrollment])
     return enrollment
+  }
+
+  const handleUpdateLessons = (enrollmentId, lessonsCompleted) => {
+    setEnrollments(prev => prev.map(e =>
+      e.id === enrollmentId ? { ...e, lessonsCompleted, status: lessonsCompleted > 0 ? 'in-progress' : e.status } : e
+    ))
   }
 
   const handleGraduate = (enrollmentId) => {
@@ -132,7 +143,7 @@ export default function App() {
   }
 
   const handleAddCourse = (course) => {
-    setCourses(prev => [...prev, { ...course, id: `C-${Date.now()}` }])
+    setCourses(prev => [...prev, { ...course, id: `C-${Date.now()}`, totalLessons: Number(course.totalLessons) || 20, durationWeeks: Number(course.durationWeeks) || 12 }])
   }
 
   return (
@@ -189,6 +200,7 @@ export default function App() {
           enrollments={enrollments}
           onEnroll={handleEnroll}
           onGraduate={handleGraduate}
+          onUpdateLessons={handleUpdateLessons}
           onBack={() => setScreen('dashboard')}
         />
       )}
