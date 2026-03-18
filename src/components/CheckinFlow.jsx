@@ -34,6 +34,7 @@ export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
+        <img src="/logo.png" alt="Logo" className="w-9 h-9 rounded-lg object-cover" />
         <div>
           <h1 className="text-xl font-bold">Return Headset</h1>
           <p className="text-sky-300 text-sm">Check equipment back in</p>

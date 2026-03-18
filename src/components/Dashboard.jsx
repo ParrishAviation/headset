@@ -58,7 +58,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
       {/* Header */}
       <header className="bg-sky-900 text-white px-8 py-5 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-4">
-          <HeadsetIcon className="w-10 h-10 text-sky-300" />
+          <img src="/logo.png" alt="Flight School Logo" className="w-12 h-12 rounded-xl object-cover" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Flight School Headset Rental</h1>
             <p className="text-sky-300 text-sm mt-0.5">Equipment Check-Out System</p>
