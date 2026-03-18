@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+const VIEW_PREF_KEY = 'headset_view_layout'
+
 const conditionColors = {
   Excellent: 'bg-emerald-100 text-emerald-700',
   Good: 'bg-blue-100 text-blue-700',
@@ -16,8 +18,34 @@ function HeadsetIcon({ className }) {
   )
 }
 
+function GridIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="8" height="8" rx="1.5" strokeLinejoin="round" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" strokeLinejoin="round" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" strokeLinejoin="round" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ListIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  )
+}
+
 export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, onCheckin, onAdmin }) {
   const [tab, setTab] = useState('available')
+  const [layout, setLayout] = useState(() => localStorage.getItem(VIEW_PREF_KEY) || 'grid')
+
+  const toggleLayout = () => {
+    const next = layout === 'grid' ? 'list' : 'grid'
+    setLayout(next)
+    localStorage.setItem(VIEW_PREF_KEY, next)
+  }
 
   const available = headsets.filter(h => h.status === 'available')
   const rented = headsets.filter(h => h.status === 'rented')
@@ -73,7 +101,7 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
       </div>
 
       {/* Tab Nav */}
-      <div className="bg-white border-b border-slate-200 px-8">
+      <div className="bg-white border-b border-slate-200 px-8 flex items-center justify-between">
         <div className="flex gap-1">
           {[
             { key: 'available', label: `Available (${available.length})` },
@@ -92,6 +120,30 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-1 py-2">
+          <button
+            onClick={toggleLayout}
+            title={layout === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+            className={`p-2 rounded-lg transition-colors ${
+              layout === 'grid'
+                ? 'bg-sky-100 text-sky-700'
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <GridIcon className="w-5 h-5" />
+          </button>
+          <button
+            onClick={toggleLayout}
+            title={layout === 'list' ? 'Switch to grid view' : 'Switch to list view'}
+            className={`p-2 rounded-lg transition-colors ${
+              layout === 'list'
+                ? 'bg-sky-100 text-sky-700'
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <ListIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -105,7 +157,7 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
                 <p className="text-sm mt-1">All headsets are currently rented out</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-5 max-w-4xl">
+              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5 max-w-4xl' : 'flex flex-col gap-4 max-w-2xl'}>
                 {available.map(headset => (
                   <div key={headset.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
@@ -150,7 +202,7 @@ export default function Dashboard({ headsets, rentals, rentalFee, onCheckout, on
                 <p className="text-sm mt-1">All headsets have been returned</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-5 max-w-4xl">
+              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5 max-w-4xl' : 'flex flex-col gap-4 max-w-2xl'}>
                 {activeRentals.map(rental => (
                   <div key={rental.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4"
