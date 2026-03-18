@@ -15,7 +15,7 @@ const STAFF_PASSWORD = 'staff123'
 
 export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [step, setStep] = useState(0)
-  const [form, setForm] = useState({ renterName: '', studentId: '', phone: '' })
+  const [form, setForm] = useState({ renterName: '', email: '' })
   const [paymentMethod, setPaymentMethod] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState({})
@@ -38,6 +38,8 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const validateDetails = () => {
     const e = {}
     if (!form.renterName.trim()) e.renterName = 'Name is required'
+    if (!form.email.trim()) e.email = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email address'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -167,27 +169,18 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Student / Member ID <span className="text-slate-400 font-normal">(optional)</span>
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="text"
-                  value={form.studentId}
-                  onChange={e => setForm(f => ({ ...f, studentId: e.target.value }))}
-                  placeholder="e.g. STU-2024-001"
-                  className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="e.g. john@example.com"
+                  className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                    errors.email ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                  }`}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Phone Number <span className="text-slate-400 font-normal">(optional)</span>
-                </label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  placeholder="e.g. (555) 000-0000"
-                  className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
             </div>
           )}
@@ -420,8 +413,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
               <div className="space-y-2">
                 <SummaryRow label="Headset" value={`${headset.name} — ${headset.model}`} />
                 <SummaryRow label="Renter" value={form.renterName} />
-                {form.studentId && <SummaryRow label="Student ID" value={form.studentId} />}
-                {form.phone && <SummaryRow label="Phone" value={form.phone} />}
+                <SummaryRow label="Email" value={form.email} />
                 <SummaryRow label="Payment" value={{
                   credit_card: 'Credit / Debit Card',
                   cash: 'Cash (Staff Authorized)',
