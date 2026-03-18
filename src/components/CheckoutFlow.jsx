@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 
 function HeadsetIcon({ className }) {
   return (
@@ -25,6 +26,15 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [cashAuthorized, setCashAuthorized] = useState(false)
   const [cashPasswordError, setCashPasswordError] = useState('')
 
+  // Apple Wallet state
+  const [applePayConfirmed, setApplePayConfirmed] = useState(false)
+  const [applePayTimer, setApplePayTimer] = useState(null)
+  const applePayUrl = `https://pay.apple.com/qr?amount=${headset.fee.toFixed(2)}&label=${encodeURIComponent('Flight School Headset Rental')}&id=${headset.id}`
+
+  useEffect(() => {
+    return () => { if (applePayTimer) clearInterval(applePayTimer) }
+  }, [applePayTimer])
+
   const validateDetails = () => {
     const e = {}
     if (!form.renterName.trim()) e.renterName = 'Name is required'
@@ -36,6 +46,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
     const e = {}
     if (!paymentMethod) e.paymentMethod = 'Please select a payment method'
     else if (paymentMethod === 'cash' && !cashAuthorized) e.paymentMethod = 'Cash payment must be authorized by staff'
+    else if (paymentMethod === 'apple_wallet' && !applePayConfirmed) e.paymentMethod = 'Please confirm payment was completed on the customer\'s device'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -58,6 +69,8 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
     setCashPassword('')
     setCashPasswordError('')
     setShowCashAuth(value === 'cash')
+    setApplePayConfirmed(false)
+    if (applePayTimer) { clearInterval(applePayTimer); setApplePayTimer(null) }
   }
 
   const handleCashAuth = () => {
@@ -195,6 +208,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                   {[
                     { value: 'credit_card', label: 'Credit / Debit Card', icon: '💳' },
                     { value: 'cash', label: 'Cash', icon: '💵' },
+                    { value: 'apple_wallet', label: 'Apple Wallet', icon: null },
                   ].map(opt => (
                     <div key={opt.value}>
                       <button
@@ -203,14 +217,24 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                           paymentMethod === opt.value
                             ? opt.value === 'cash' && !cashAuthorized
                               ? 'border-amber-400 bg-amber-50'
+                              : opt.value === 'apple_wallet' && !applePayConfirmed
+                              ? 'border-slate-400 bg-slate-50'
                               : 'border-sky-500 bg-sky-50'
                             : 'border-slate-200 bg-white hover:border-slate-300'
                         }`}
                       >
-                        <span className="text-2xl">{opt.icon}</span>
+                        {opt.icon ? (
+                          <span className="text-2xl">{opt.icon}</span>
+                        ) : (
+                          <svg viewBox="0 0 24 24" className="w-7 h-7 flex-shrink-0" fill="currentColor">
+                            <path className={paymentMethod === 'apple_wallet' && applePayConfirmed ? 'text-sky-700' : 'text-slate-700'} d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                          </svg>
+                        )}
                         <span className={`font-semibold text-base ${
                           paymentMethod === opt.value
-                            ? opt.value === 'cash' && !cashAuthorized ? 'text-amber-700' : 'text-sky-700'
+                            ? opt.value === 'cash' && !cashAuthorized ? 'text-amber-700'
+                            : opt.value === 'apple_wallet' && !applePayConfirmed ? 'text-slate-700'
+                            : 'text-sky-700'
                             : 'text-slate-700'
                         }`}>
                           {opt.label}
@@ -220,7 +244,19 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                             Needs Staff Auth
                           </span>
                         )}
-                        {paymentMethod === opt.value && (opt.value !== 'cash' || cashAuthorized) && (
+                        {paymentMethod === opt.value && opt.value === 'apple_wallet' && !applePayConfirmed && (
+                          <span className="ml-auto text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                            Scan to Pay
+                          </span>
+                        )}
+                        {paymentMethod === opt.value && opt.value === 'apple_wallet' && applePayConfirmed && (
+                          <div className="ml-auto w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                        {paymentMethod === opt.value && (opt.value !== 'cash' && opt.value !== 'apple_wallet') && (
                           <div className="ml-auto w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center">
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -288,6 +324,49 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                           <span className="text-emerald-700 text-sm font-semibold">Cash payment authorized by staff</span>
                         </div>
                       )}
+
+                      {/* Apple Wallet QR panel */}
+                      {opt.value === 'apple_wallet' && paymentMethod === 'apple_wallet' && !applePayConfirmed && (
+                        <div className="mt-2 bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+                          <div className="flex items-center gap-2">
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white flex-shrink-0" fill="currentColor">
+                              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                            </svg>
+                            <p className="text-white font-semibold text-sm">Scan with iPhone Camera to Pay</p>
+                          </div>
+                          <div className="flex justify-center">
+                            <div className="bg-white p-3 rounded-xl">
+                              <QRCodeSVG
+                                value={applePayUrl}
+                                size={180}
+                                bgColor="#ffffff"
+                                fgColor="#000000"
+                                level="M"
+                              />
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-slate-400 text-xs mb-1">Amount due</div>
+                            <div className="text-white text-2xl font-bold">${headset.fee.toFixed(2)}</div>
+                          </div>
+                          <button
+                            onClick={() => setApplePayConfirmed(true)}
+                            className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 rounded-xl transition-colors text-sm"
+                          >
+                            Payment Received — Confirm
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Apple Wallet confirmed */}
+                      {opt.value === 'apple_wallet' && paymentMethod === 'apple_wallet' && applePayConfirmed && (
+                        <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-emerald-700 text-sm font-semibold">Apple Wallet payment confirmed</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -346,6 +425,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                 <SummaryRow label="Payment" value={{
                   credit_card: 'Credit / Debit Card',
                   cash: 'Cash (Staff Authorized)',
+                  apple_wallet: 'Apple Wallet',
                 }[paymentMethod]} />
                 <div className="border-t border-slate-200 pt-3 mt-3">
                   <SummaryRow label="Rental Fee" value={`$${headset.fee.toFixed(2)}`} highlight />
