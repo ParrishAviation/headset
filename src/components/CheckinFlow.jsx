@@ -10,7 +10,7 @@ function HeadsetIcon({ className }) {
 }
 
 export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
-  const [condition, setCondition] = useState('Good')
+  const [condition, setCondition] = useState('')
   const [notes, setNotes] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
@@ -86,42 +86,58 @@ export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
           {/* Condition Check */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
             <h2 className="text-lg font-bold text-slate-800">Equipment Condition on Return</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: 'Excellent', color: 'emerald', desc: 'No issues' },
-                { value: 'Good', color: 'blue', desc: 'Minor wear' },
-                { value: 'Fair', color: 'yellow', desc: 'Noticeable wear' },
-                { value: 'Damaged', color: 'red', desc: 'Needs repair' },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => setCondition(opt.value)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    condition === opt.value
-                      ? opt.color === 'emerald' ? 'border-emerald-500 bg-emerald-50' :
-                        opt.color === 'blue' ? 'border-blue-500 bg-blue-50' :
-                        opt.color === 'yellow' ? 'border-yellow-500 bg-yellow-50' :
-                        'border-red-500 bg-red-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <div className={`font-bold text-sm ${
-                    condition === opt.value
-                      ? opt.color === 'emerald' ? 'text-emerald-700' :
-                        opt.color === 'blue' ? 'text-blue-700' :
-                        opt.color === 'yellow' ? 'text-yellow-700' :
-                        'text-red-700'
-                      : 'text-slate-700'
-                  }`}>{opt.value}</div>
-                  <div className="text-slate-500 text-xs mt-0.5">{opt.desc}</div>
-                </button>
-              ))}
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setCondition('same')}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                  condition === 'same' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  condition === 'same' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'
+                }`}>
+                  {condition === 'same' && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <div className={`font-bold text-sm ${condition === 'same' ? 'text-emerald-700' : 'text-slate-700'}`}>
+                    Same condition as checkout
+                  </div>
+                  <div className="text-slate-500 text-xs mt-0.5">No new damage or issues</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setCondition('Damaged')}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                  condition === 'Damaged' ? 'border-red-500 bg-red-50' : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  condition === 'Damaged' ? 'border-red-500 bg-red-500' : 'border-slate-300'
+                }`}>
+                  {condition === 'Damaged' && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <div className={`font-bold text-sm ${condition === 'Damaged' ? 'text-red-700' : 'text-slate-700'}`}>
+                    Damaged
+                  </div>
+                  <div className="text-slate-500 text-xs mt-0.5">New damage found — needs repair</div>
+                </div>
+              </button>
             </div>
 
             {condition === 'Damaged' && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-3">
                 <p className="text-red-700 text-sm font-medium">
-                  ⚠️ Please note damage and notify flight school staff immediately.
+                  ⚠️ Please note damage below and notify flight school staff immediately.
                 </p>
               </div>
             )}
@@ -175,9 +191,9 @@ export default function CheckinFlow({ rental, headset, onConfirm, onCancel }) {
             </button>
             <button
               onClick={handleReturn}
-              disabled={!confirmed}
+              disabled={!confirmed || !condition}
               className={`flex-1 font-semibold py-4 rounded-xl transition-colors text-base ${
-                confirmed
+                confirmed && condition
                   ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
