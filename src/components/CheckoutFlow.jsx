@@ -10,6 +10,7 @@ function HeadsetIcon({ className }) {
 }
 
 const STEPS = ['Details', 'Payment', 'Agreement', 'Confirm']
+const STAFF_PASSWORD = 'staff123'
 
 export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [step, setStep] = useState(0)
@@ -17,6 +18,12 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [paymentMethod, setPaymentMethod] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState({})
+
+  // Cash auth state
+  const [showCashAuth, setShowCashAuth] = useState(false)
+  const [cashPassword, setCashPassword] = useState('')
+  const [cashAuthorized, setCashAuthorized] = useState(false)
+  const [cashPasswordError, setCashPasswordError] = useState('')
 
   const validateDetails = () => {
     const e = {}
@@ -28,6 +35,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const validatePayment = () => {
     const e = {}
     if (!paymentMethod) e.paymentMethod = 'Please select a payment method'
+    else if (paymentMethod === 'cash' && !cashAuthorized) e.paymentMethod = 'Cash payment must be authorized by staff'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -42,6 +50,25 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const handleConfirm = () => {
     if (!agreed) return
     onConfirm({ ...form, paymentMethod })
+  }
+
+  const handleSelectPayment = (value) => {
+    setPaymentMethod(value)
+    setCashAuthorized(false)
+    setCashPassword('')
+    setCashPasswordError('')
+    setShowCashAuth(value === 'cash')
+  }
+
+  const handleCashAuth = () => {
+    if (cashPassword === STAFF_PASSWORD) {
+      setCashAuthorized(true)
+      setCashPasswordError('')
+      setShowCashAuth(false)
+    } else {
+      setCashPasswordError('Incorrect password. Please try again.')
+      setCashPassword('')
+    }
   }
 
   return (
@@ -168,30 +195,101 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                   {[
                     { value: 'credit_card', label: 'Credit / Debit Card', icon: '💳' },
                     { value: 'cash', label: 'Cash', icon: '💵' },
-                    { value: 'account', label: 'Charge to Account', icon: '🏦' },
                     { value: 'app', label: 'Mobile Payment (Venmo / Zelle)', icon: '📱' },
                   ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setPaymentMethod(opt.value)}
-                      className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all text-left ${
-                        paymentMethod === opt.value
-                          ? 'border-sky-500 bg-sky-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <span className="text-2xl">{opt.icon}</span>
-                      <span className={`font-semibold text-base ${paymentMethod === opt.value ? 'text-sky-700' : 'text-slate-700'}`}>
-                        {opt.label}
-                      </span>
-                      {paymentMethod === opt.value && (
-                        <div className="ml-auto w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
+                    <div key={opt.value}>
+                      <button
+                        onClick={() => handleSelectPayment(opt.value)}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all text-left ${
+                          paymentMethod === opt.value
+                            ? opt.value === 'cash' && !cashAuthorized
+                              ? 'border-amber-400 bg-amber-50'
+                              : 'border-sky-500 bg-sky-50'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <span className="text-2xl">{opt.icon}</span>
+                        <span className={`font-semibold text-base ${
+                          paymentMethod === opt.value
+                            ? opt.value === 'cash' && !cashAuthorized ? 'text-amber-700' : 'text-sky-700'
+                            : 'text-slate-700'
+                        }`}>
+                          {opt.label}
+                        </span>
+                        {paymentMethod === opt.value && opt.value === 'cash' && !cashAuthorized && (
+                          <span className="ml-auto text-xs font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">
+                            Needs Staff Auth
+                          </span>
+                        )}
+                        {paymentMethod === opt.value && (opt.value !== 'cash' || cashAuthorized) && (
+                          <div className="ml-auto w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                        {paymentMethod === opt.value && opt.value === 'cash' && cashAuthorized && (
+                          <div className="ml-auto w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Cash password prompt */}
+                      {opt.value === 'cash' && paymentMethod === 'cash' && showCashAuth && (
+                        <div className="mt-2 bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-amber-800">
+                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                            </svg>
+                            <p className="font-semibold text-sm">Staff authorization required for cash payment</p>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-amber-700 mb-1.5">Staff Password</label>
+                            <input
+                              type="password"
+                              value={cashPassword}
+                              onChange={e => { setCashPassword(e.target.value); setCashPasswordError('') }}
+                              onKeyDown={e => e.key === 'Enter' && handleCashAuth()}
+                              placeholder="Enter staff password"
+                              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                                cashPasswordError ? 'border-red-400 bg-red-50' : 'border-amber-300 bg-white'
+                              }`}
+                              autoFocus
+                            />
+                            {cashPasswordError && (
+                              <p className="text-red-600 text-xs mt-1 font-medium">{cashPasswordError}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { setShowCashAuth(false); setPaymentMethod(''); setCashPassword(''); setCashPasswordError('') }}
+                              className="flex-1 text-sm border border-amber-300 text-amber-700 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors font-medium"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleCashAuth}
+                              className="flex-1 text-sm bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg transition-colors font-semibold"
+                            >
+                              Authorize
+                            </button>
+                          </div>
                         </div>
                       )}
-                    </button>
+
+                      {/* Cash authorized confirmation */}
+                      {opt.value === 'cash' && paymentMethod === 'cash' && cashAuthorized && (
+                        <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-emerald-700 text-sm font-semibold">Cash payment authorized by staff</span>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
                 {errors.paymentMethod && <p className="text-red-500 text-sm mt-2">{errors.paymentMethod}</p>}
@@ -248,8 +346,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                 {form.phone && <SummaryRow label="Phone" value={form.phone} />}
                 <SummaryRow label="Payment" value={{
                   credit_card: 'Credit / Debit Card',
-                  cash: 'Cash',
-                  account: 'Charge to Account',
+                  cash: 'Cash (Staff Authorized)',
                   app: 'Mobile Payment'
                 }[paymentMethod]} />
                 <div className="border-t border-slate-200 pt-3 mt-3">
