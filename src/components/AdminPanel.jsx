@@ -1,14 +1,5 @@
 import { useState } from 'react'
 
-function GradCapIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round"
-        d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-    </svg>
-  )
-}
-
 function HeadsetIcon({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -26,16 +17,12 @@ const conditionColors = {
   Damaged: 'bg-red-100 text-red-700',
 }
 
-export default function AdminPanel({ headsets, rentals, transactions, courses, enrollments, onAddCourse, onBack }) {
+export default function AdminPanel({ headsets, rentals, transactions, onBack }) {
   const [tab, setTab] = useState('overview')
-  const [showAddCourse, setShowAddCourse] = useState(false)
-  const [newCourse, setNewCourse] = useState({ name: '', duration: '', description: '' })
 
   const activeRentals = rentals.filter(r => r.status === 'active')
   const completedRentals = rentals.filter(r => r.status === 'returned')
   const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0)
-  const activeEnrollments = (enrollments || []).filter(e => e.status !== 'completed')
-  const graduates = (enrollments || []).filter(e => e.status === 'completed')
 
   const formatDateTime = (date) => {
     return new Date(date).toLocaleString([], {
@@ -65,7 +52,6 @@ export default function AdminPanel({ headsets, rentals, transactions, courses, e
             { key: 'overview', label: 'Overview' },
             { key: 'rentals', label: `All Rentals (${rentals.length})` },
             { key: 'headsets', label: 'Headsets' },
-            { key: 'courses', label: `Courses (${(courses || []).length})` },
           ].map(t => (
             <button
               key={t.key}
@@ -189,96 +175,6 @@ export default function AdminPanel({ headsets, rentals, transactions, courses, e
                 </table>
               </div>
             )}
-          </div>
-        )}
-
-        {tab === 'courses' && (
-          <div className="max-w-3xl space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard label="Active Enrollments" value={activeEnrollments.length} sub="students in progress" color="sky" icon="📚" />
-              <StatCard label="Graduates" value={graduates.length} sub="completed courses" color="emerald" icon="🎓" />
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                <h2 className="font-bold text-slate-800">Course Catalog</h2>
-                <button
-                  onClick={() => setShowAddCourse(v => !v)}
-                  className="text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-4 py-1.5 rounded-lg transition-colors"
-                >
-                  + Add Course
-                </button>
-              </div>
-              {showAddCourse && (
-                <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Course Name *</label>
-                      <input value={newCourse.name} onChange={e => setNewCourse(p => ({ ...p, name: e.target.value }))}
-                        placeholder="e.g. Night Rating"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Duration</label>
-                      <input value={newCourse.duration} onChange={e => setNewCourse(p => ({ ...p, duration: e.target.value }))}
-                        placeholder="e.g. 10 flight hours"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Description</label>
-                    <input value={newCourse.description} onChange={e => setNewCourse(p => ({ ...p, description: e.target.value }))}
-                      placeholder="Short description of the course"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400" />
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowAddCourse(false)}
-                      className="text-sm border border-slate-300 text-slate-600 px-4 py-1.5 rounded-lg hover:bg-white transition-colors">Cancel</button>
-                    <button
-                      onClick={() => {
-                        if (!newCourse.name.trim()) return
-                        onAddCourse(newCourse)
-                        setNewCourse({ name: '', duration: '', description: '' })
-                        setShowAddCourse(false)
-                      }}
-                      className="text-sm bg-sky-600 hover:bg-sky-700 text-white px-4 py-1.5 rounded-lg transition-colors font-semibold">
-                      Save Course
-                    </button>
-                  </div>
-                </div>
-              )}
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-5 py-3 font-semibold text-slate-600">Course</th>
-                    <th className="text-left px-5 py-3 font-semibold text-slate-600">Duration</th>
-                    <th className="text-center px-5 py-3 font-semibold text-slate-600">Enrolled</th>
-                    <th className="text-center px-5 py-3 font-semibold text-slate-600">Graduated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(courses || []).map(c => {
-                    const enrolled = (enrollments || []).filter(e => e.courseId === c.id).length
-                    const graduated = (enrollments || []).filter(e => e.courseId === c.id && e.status === 'completed').length
-                    return (
-                      <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <GradCapIcon className="w-4 h-4 text-slate-400" />
-                            <div>
-                              <div className="font-semibold text-slate-800">{c.name}</div>
-                              {c.description && <div className="text-slate-400 text-xs">{c.description}</div>}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 text-xs">{c.duration}</td>
-                        <td className="px-5 py-3.5 text-center font-semibold text-sky-700">{enrolled}</td>
-                        <td className="px-5 py-3.5 text-center font-semibold text-emerald-700">{graduated}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
 
