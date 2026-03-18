@@ -33,7 +33,6 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   // Start polling when Apple Wallet is selected
   useEffect(() => {
     if (paymentMethod !== 'apple_wallet' || applePayConfirmed) return
-    setApplePayPolling(true)
     // Simulate payment webhook completing after ~12 seconds
     const timer = setTimeout(() => {
       setApplePayConfirmed(true)
@@ -78,7 +77,6 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
     setCashPasswordError('')
     setShowCashAuth(value === 'cash')
     setApplePayConfirmed(false)
-    if (applePayTimer) { clearInterval(applePayTimer); setApplePayTimer(null) }
   }
 
   const handleCashAuth = () => {
