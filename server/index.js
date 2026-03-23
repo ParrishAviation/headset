@@ -3,10 +3,21 @@ import express from 'express'
 import cors from 'cors'
 import { SquareClient, SquareEnvironment } from 'square'
 import { v4 as uuidv4 } from 'uuid'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { existsSync } from 'fs'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const distPath = join(__dirname, '..', 'dist')
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+
+// Serve built frontend in production
+if (existsSync(distPath)) {
+  app.use(express.static(distPath))
+}
 
 const { SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID, PORT = 3001 } = process.env
 
@@ -90,6 +101,13 @@ app.get('/api/square/payment-status/:orderId', async (req, res) => {
   }
 })
 
+// For any non-API route, serve the frontend (client-side routing)
+if (existsSync(distPath)) {
+  app.get('*', (req, res) => {
+    res.sendFile(join(distPath, 'index.html'))
+  })
+}
+
 app.listen(PORT, () => {
-  console.log(`✅  Square backend running on http://localhost:${PORT}`)
+  console.log(`✅  Server running on http://localhost:${PORT}`)
 })
