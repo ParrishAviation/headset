@@ -447,7 +447,8 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                         </div>
                       )}
                     </div>
-                  ))}
+                  )
+                  })}
                 </div>
                 {errors.paymentMethod && <p className="text-red-500 text-sm mt-2">{errors.paymentMethod}</p>}
               </div>
