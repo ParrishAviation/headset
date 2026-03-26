@@ -2,23 +2,14 @@ import { useState } from 'react'
 
 const VIEW_PREF_KEY = 'headset_view_layout'
 
-function HeadsetIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round"
-        d="M3 12a9 9 0 1 1 18 0M3 12v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H4.5M21 12v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2H19.5" />
-    </svg>
-  )
-}
-
 const HEADSET_BORDER = {
-  'HS-01': 'border-blue-300',
-  'HS-02': 'border-red-300',
-  'HS-03': 'border-blue-300',
-  'HS-04': 'border-red-300',
+  'HS-01': 'border-blue-400',
+  'HS-02': 'border-red-400',
+  'HS-03': 'border-blue-400',
+  'HS-04': 'border-red-400',
 }
 
-const HEADSET_ACCENT = {
+const HEADSET_ACCENT_BG = {
   'HS-01': 'bg-blue-500',
   'HS-02': 'bg-red-500',
   'HS-03': 'bg-blue-500',
@@ -26,24 +17,15 @@ const HEADSET_ACCENT = {
 }
 
 function HeadsetLogo({ model }) {
-  if (model.toLowerCase().includes('lightspeed')) {
+  if (model.toLowerCase().includes('lightspeed'))
     return <img src="/lightspeed-logo.png" alt="Lightspeed" className="max-h-full max-w-full object-contain" />
-  }
-  if (model.toLowerCase().includes('david clark')) {
+  if (model.toLowerCase().includes('david clark'))
     return <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain p-4" />
-  }
-  return <HeadsetIcon className="w-12 h-12 text-slate-400" />
+  return null
 }
 
 export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, onAdmin }) {
   const [tab, setTab] = useState('available')
-  const [layout, setLayout] = useState(() => localStorage.getItem(VIEW_PREF_KEY) || 'grid')
-
-  const toggleLayout = () => {
-    const next = layout === 'grid' ? 'list' : 'grid'
-    setLayout(next)
-    localStorage.setItem(VIEW_PREF_KEY, next)
-  }
 
   const available = headsets.filter(h => h.status === 'available')
   const rented = headsets.filter(h => h.status === 'rented')
@@ -53,157 +35,83 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
   const formatDate = (date) => new Date(date).toLocaleDateString([], { month: 'short', day: 'numeric' })
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f0f4f8' }}>
+    <div className="min-h-screen bg-white flex flex-col">
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-cover" />
+      <header className="px-8 pt-7 pb-5 flex items-center justify-between">
+        <div className="flex items-center gap-3.5">
+          <img src="/logo.png" alt="Logo" className="w-11 h-11 rounded-xl object-cover shadow-sm" />
           <div>
-            <h1 className="text-lg font-bold text-slate-900 leading-tight">Headset Rental</h1>
-            <p className="text-slate-400 text-xs">Lightspeed $10 · David Clark $5</p>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Headset Rental</h1>
+            <p className="text-slate-400 text-xs mt-1">Lightspeed $10 &nbsp;·&nbsp; David Clark $5</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Stats pills */}
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-              {available.length} available
-            </span>
-            <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
-              {rented.length} out
-            </span>
-          </div>
-          <button
-            onClick={onAdmin}
-            className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition-colors"
-            title="Admin"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
+        <button
+          onClick={onAdmin}
+          className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+          title="Admin"
+        >
+          <svg className="w-4.5 h-4.5 text-slate-500" style={{width:'18px',height:'18px'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
       </header>
 
-      {/* Tab Nav */}
-      <div className="bg-white border-b border-slate-200 px-8 flex items-center justify-between">
-        <div className="flex gap-0">
+      {/* Tab switcher */}
+      <div className="px-8 mb-6">
+        <div className="flex bg-slate-100 rounded-2xl p-1 gap-1">
           {[
-            { key: 'available', label: `Available (${available.length})` },
-            { key: 'rented', label: `Rented Out (${rented.length})` },
+            { key: 'available', label: 'Available', count: available.length },
+            { key: 'rented', label: 'Rented Out', count: rented.length },
           ].map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 tab === t.key
-                  ? 'border-slate-800 text-slate-900'
-                  : 'border-transparent text-slate-400 hover:text-slate-600'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-1">
-          {[
-            { key: 'grid', icon: <><rect x="3" y="3" width="8" height="8" rx="1.5" strokeLinejoin="round"/><rect x="13" y="3" width="8" height="8" rx="1.5" strokeLinejoin="round"/><rect x="3" y="13" width="8" height="8" rx="1.5" strokeLinejoin="round"/><rect x="13" y="13" width="8" height="8" rx="1.5" strokeLinejoin="round"/></> },
-            { key: 'list', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/> },
-          ].map(({ key, icon }) => (
-            <button
-              key={key}
-              onClick={() => { setLayout(key); localStorage.setItem(VIEW_PREF_KEY, key) }}
-              className={`p-1.5 rounded-lg transition-colors ${layout === key ? 'bg-slate-100 text-slate-800' : 'text-slate-300 hover:text-slate-500'}`}
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">{icon}</svg>
+              <span className={`ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                tab === t.key ? 'bg-slate-100 text-slate-600' : 'text-slate-400'
+              }`}>
+                {t.count}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 p-6">
+      {/* Cards */}
+      <div className="flex-1 px-8 pb-8">
 
-        {/* Available tab */}
         {tab === 'available' && (
           available.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 text-slate-300">
-              <HeadsetIcon className="w-14 h-14 mb-3" />
-              <p className="text-base font-medium text-slate-400">No headsets available</p>
+            <div className="flex flex-col items-center justify-center h-64 text-slate-300">
+              <p className="text-base font-medium text-slate-400">All headsets are rented out</p>
             </div>
           ) : (
-            <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5' : 'flex flex-col gap-4'}>
+            <div className="grid grid-cols-2 gap-5">
               {available.map(headset => (
-                <div key={headset.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {/* Color accent bar */}
-                  <div className={`h-1 w-full ${HEADSET_ACCENT[headset.id] || 'bg-slate-300'}`} />
-                  <div className="p-6 flex flex-col gap-5">
-                    {/* Logo box */}
-                    <div className={`h-36 rounded-xl border-2 ${HEADSET_BORDER[headset.id] || 'border-slate-200'} flex items-center justify-center px-6`}>
-                      <HeadsetLogo model={headset.model} />
-                    </div>
-                    {/* Footer row */}
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        Available
-                      </span>
-                      <button
-                        onClick={() => onCheckout(headset.id)}
-                        className="bg-slate-900 hover:bg-slate-700 active:bg-black text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
-                      >
-                        Rent — ${headset.fee.toFixed(2)}
-                      </button>
-                    </div>
+                <div key={headset.id} className="rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                  {/* Logo area */}
+                  <div className={`border-2 ${HEADSET_BORDER[headset.id]} rounded-3xl m-3 flex items-center justify-center`} style={{ height: '160px' }}>
+                    <HeadsetLogo model={headset.model} />
                   </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Rented tab */}
-        {tab === 'rented' && (
-          activeRentals.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 text-slate-300">
-              <HeadsetIcon className="w-14 h-14 mb-3" />
-              <p className="text-base font-medium text-slate-400">No active rentals</p>
-            </div>
-          ) : (
-            <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5' : 'flex flex-col gap-4'}>
-              {activeRentals.map(rental => (
-                <div key={rental.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                  <div className={`h-1 w-full ${HEADSET_ACCENT[rental.headsetId] || 'bg-slate-300'}`} />
-                  <div className="p-6 flex flex-col gap-5">
-                    {/* Logo box */}
-                    <div className={`h-36 rounded-xl border-2 ${HEADSET_BORDER[rental.headsetId] || 'border-slate-200'} flex items-center justify-center px-6`}>
-                      <HeadsetLogo model={rental.headsetModel} />
+                  {/* Footer */}
+                  <div className="px-4 pb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+                      <span className="text-xs text-slate-400 font-medium">Available</span>
                     </div>
-                    {/* Renter info */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Renter</span>
-                        <span className="text-sm font-semibold text-slate-800">{rental.renterName}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Since</span>
-                        <span className="text-sm text-slate-600">{formatDate(rental.checkoutTime)} at {formatTime(rental.checkoutTime)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Fee</span>
-                        <span className="text-sm font-semibold text-slate-800">${rental.fee.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    {/* Return button */}
                     <button
-                      onClick={() => onCheckin(rental.id)}
-                      className="w-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                      onClick={() => onCheckout(headset.id)}
+                      className="bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                     >
-                      Return Headset
+                      Rent — ${headset.fee.toFixed(2)}
                     </button>
                   </div>
                 </div>
@@ -211,6 +119,50 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
             </div>
           )
         )}
+
+        {tab === 'rented' && (
+          activeRentals.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <p className="text-base font-medium text-slate-400">No headsets currently rented</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-5">
+              {activeRentals.map(rental => (
+                <div key={rental.id} className="rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                  {/* Logo area */}
+                  <div className={`border-2 ${HEADSET_BORDER[rental.headsetId]} rounded-3xl m-3 flex items-center justify-center`} style={{ height: '160px' }}>
+                    <HeadsetLogo model={rental.headsetModel} />
+                  </div>
+                  {/* Renter info */}
+                  <div className="px-4 pb-1 space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Renter</span>
+                      <span className="font-semibold text-slate-800">{rental.renterName}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Since</span>
+                      <span className="text-slate-600">{formatDate(rental.checkoutTime)} {formatTime(rental.checkoutTime)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Fee</span>
+                      <span className="font-semibold text-slate-800">${rental.fee.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  {/* Return button */}
+                  <div className="p-4">
+                    <button
+                      onClick={() => onCheckin(rental.id)}
+                      className="w-full border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                    >
+                      Return
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
       </div>
     </div>
   )
