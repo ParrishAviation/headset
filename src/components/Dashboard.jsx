@@ -174,7 +174,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                     <div className="flex justify-center">
                       <button
                         onClick={() => onCheckout(headset.id)}
-                        className="w-3/4 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
+                        className="w-1/2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
                       >
                         Rent This Headset — ${headset.fee.toFixed(2)}
                       </button>
