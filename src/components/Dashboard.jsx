@@ -158,13 +158,13 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden">
+                        <div className="w-20 h-14 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden px-2">
                           {headset.model.toLowerCase().includes('lightspeed') ? (
-                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-10 object-contain" />
+                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
                           ) : headset.model.toLowerCase().includes('david clark') ? (
-                            <img src="/davidclark-logo.png" alt="David Clark" className="w-10 object-contain" />
+                            <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
                           ) : (
-                            <HeadsetIcon className="w-7 h-7 text-sky-600" />
+                            <HeadsetIcon className="w-8 h-8 text-sky-600" />
                           )}
                         </div>
                         <div>
@@ -208,13 +208,13 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden">
+                        <div className="w-20 h-14 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden px-2">
                           {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
-                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-10 object-contain" />
+                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
                           ) : rental.headsetModel.toLowerCase().includes('david clark') ? (
-                            <img src="/davidclark-logo.png" alt="David Clark" className="w-10 object-contain" />
+                            <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
                           ) : (
-                            <HeadsetIcon className="w-7 h-7 text-amber-600" />
+                            <HeadsetIcon className="w-8 h-8 text-amber-600" />
                           )}
                         </div>
                         <div>
