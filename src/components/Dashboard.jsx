@@ -31,6 +31,13 @@ function ListIcon({ className }) {
   )
 }
 
+const HEADSET_BORDER = {
+  'HS-01': 'border-blue-400',
+  'HS-02': 'border-red-400',
+  'HS-03': 'border-blue-400',
+  'HS-04': 'border-red-400',
+}
+
 export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, onAdmin }) {
   const [tab, setTab] = useState('available')
   const [layout, setLayout] = useState(() => localStorage.getItem(VIEW_PREF_KEY) || 'grid')
@@ -156,16 +163,14 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   <div key={headset.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
                   >
-                    <div className="w-full flex justify-center">
-                      <div className="w-full h-32 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden px-6">
-                        {headset.model.toLowerCase().includes('lightspeed') ? (
-                          <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
-                        ) : headset.model.toLowerCase().includes('david clark') ? (
-                          <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
-                        ) : (
-                          <HeadsetIcon className="w-12 h-12 text-sky-600" />
-                        )}
-                      </div>
+                    <div className={`w-full h-32 rounded-xl border-2 ${HEADSET_BORDER[headset.id] || 'border-slate-300'} flex items-center justify-center overflow-hidden px-6`}>
+                      {headset.model.toLowerCase().includes('lightspeed') ? (
+                        <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
+                      ) : headset.model.toLowerCase().includes('david clark') ? (
+                        <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
+                      ) : (
+                        <HeadsetIcon className="w-12 h-12 text-sky-600" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -201,16 +206,14 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4"
                   >
                     <div className="flex flex-col gap-2">
-                      <div className="w-full flex justify-center">
-                        <div className="w-full h-32 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden px-6">
-                          {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
-                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
-                          ) : rental.headsetModel.toLowerCase().includes('david clark') ? (
-                            <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
-                          ) : (
-                            <HeadsetIcon className="w-12 h-12 text-amber-600" />
-                          )}
-                        </div>
+                      <div className={`w-full h-32 rounded-xl border-2 ${HEADSET_BORDER[rental.headsetId] || 'border-slate-300'} flex items-center justify-center overflow-hidden px-6`}>
+                        {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
+                          <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
+                        ) : rental.headsetModel.toLowerCase().includes('david clark') ? (
+                          <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
+                        ) : (
+                          <HeadsetIcon className="w-12 h-12 text-slate-500" />
+                        )}
                       </div>
                       <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full self-start">
                         Rented Out
