@@ -167,7 +167,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                       {headset.model.toLowerCase().includes('lightspeed') ? (
                         <img src="/lightspeed-logo.png" alt="Lightspeed" className="max-h-full max-w-full object-contain" />
                       ) : headset.model.toLowerCase().includes('david clark') ? (
-                        <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain" />
+                        <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain p-4" />
                       ) : (
                         <HeadsetIcon className="w-12 h-12 text-sky-600" />
                       )}
@@ -210,7 +210,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                         {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
                           <img src="/lightspeed-logo.png" alt="Lightspeed" className="max-h-full max-w-full object-contain" />
                         ) : rental.headsetModel.toLowerCase().includes('david clark') ? (
-                          <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain" />
+                          <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain p-4" />
                         ) : (
                           <HeadsetIcon className="w-12 h-12 text-slate-500" />
                         )}
