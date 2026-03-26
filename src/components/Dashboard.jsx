@@ -141,7 +141,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-6">
         {tab === 'available' && (
           <div>
             {available.length === 0 ? (
@@ -151,7 +151,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                 <p className="text-sm mt-1">All headsets are currently rented out</p>
               </div>
             ) : (
-              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5 max-w-4xl' : 'flex flex-col gap-4 max-w-2xl'}>
+              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-6' : 'flex flex-col gap-4'}>
                 {available.map(headset => (
                   <div key={headset.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
@@ -193,7 +193,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                 <p className="text-sm mt-1">All headsets have been returned</p>
               </div>
             ) : (
-              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-5 max-w-4xl' : 'flex flex-col gap-4 max-w-2xl'}>
+              <div className={layout === 'grid' ? 'grid grid-cols-2 gap-6' : 'flex flex-col gap-4'}>
                 {activeRentals.map(rental => (
                   <div key={rental.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4"
