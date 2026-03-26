@@ -156,21 +156,15 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   <div key={headset.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-48 h-28 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden px-4">
-                          {headset.model.toLowerCase().includes('lightspeed') ? (
-                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
-                          ) : headset.model.toLowerCase().includes('david clark') ? (
-                            <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
-                          ) : (
-                            <HeadsetIcon className="w-8 h-8 text-sky-600" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800 text-lg">{headset.name}</div>
-                          <div className="text-slate-500 text-sm">{headset.model}</div>
-                        </div>
+                    <div className="w-full flex justify-center">
+                      <div className="w-full h-32 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden px-6">
+                        {headset.model.toLowerCase().includes('lightspeed') ? (
+                          <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
+                        ) : headset.model.toLowerCase().includes('david clark') ? (
+                          <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
+                        ) : (
+                          <HeadsetIcon className="w-12 h-12 text-sky-600" />
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -206,23 +200,19 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   <div key={rental.id}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-48 h-28 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden px-4">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-full flex justify-center">
+                        <div className="w-full h-32 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden px-6">
                           {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
                             <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-full object-contain" />
                           ) : rental.headsetModel.toLowerCase().includes('david clark') ? (
                             <img src="/davidclark-logo.png" alt="David Clark" className="w-full object-contain" />
                           ) : (
-                            <HeadsetIcon className="w-8 h-8 text-amber-600" />
+                            <HeadsetIcon className="w-12 h-12 text-amber-600" />
                           )}
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-800 text-lg">{rental.headsetName}</div>
-                          <div className="text-slate-500 text-sm">{rental.headsetModel}</div>
-                        </div>
                       </div>
-                      <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                      <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full self-start">
                         Rented Out
                       </span>
                     </div>
