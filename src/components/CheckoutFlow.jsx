@@ -15,6 +15,7 @@ const STAFF_PASSWORD = 'staff123'
 
 export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [step, setStep] = useState(0)
+  const [detailsSubStep, setDetailsSubStep] = useState(0) // 0=name, 1=email
   const [form, setForm] = useState({ renterName: '', email: '' })
   const [paymentMethod, setPaymentMethod] = useState('')
   const [agreed, setAgreed] = useState(false)
@@ -87,9 +88,12 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
 
   const validateDetails = () => {
     const e = {}
-    if (!form.renterName.trim()) e.renterName = 'Name is required'
-    if (!form.email.trim()) e.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email address'
+    if (detailsSubStep === 0) {
+      if (!form.renterName.trim()) e.renterName = 'Name is required'
+    } else {
+      if (!form.email.trim()) e.email = 'Email is required'
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email address'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -104,7 +108,14 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   }
 
   const handleNext = () => {
-    if (step === 0 && !validateDetails()) return
+    if (step === 0) {
+      if (!validateDetails()) return
+      if (detailsSubStep === 0) {
+        setErrors({})
+        setDetailsSubStep(1)
+        return
+      }
+    }
     if (step === 1 && !validatePayment()) return
     setErrors({})
     setStep(s => s + 1)
@@ -206,37 +217,61 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
           {/* Step 0: Renter Details */}
           {step === 0 && (
             <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
-              <h2 className="text-lg font-bold text-slate-800">Renter Information</h2>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.renterName}
-                  onChange={e => setForm(f => ({ ...f, renterName: e.target.value }))}
-                  placeholder="e.g. John Smith"
-                  className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                    errors.renterName ? 'border-red-400 bg-red-50' : 'border-slate-300'
-                  }`}
-                />
-                {errors.renterName && <p className="text-red-500 text-sm mt-1">{errors.renterName}</p>}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-slate-800">Renter Information</h2>
+                <span className="text-sm text-slate-400">{detailsSubStep + 1} of 2</span>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="e.g. john@example.com"
-                  className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                    errors.email ? 'border-red-400 bg-red-50' : 'border-slate-300'
-                  }`}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
+
+              {detailsSubStep === 0 && (
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.renterName}
+                    onChange={e => setForm(f => ({ ...f, renterName: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleNext()}
+                    placeholder="e.g. John Smith"
+                    autoFocus
+                    className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                      errors.renterName ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                    }`}
+                  />
+                  {errors.renterName && <p className="text-red-500 text-sm mt-1">{errors.renterName}</p>}
+                </div>
+              )}
+
+              {detailsSubStep === 1 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4 text-sm text-slate-500">
+                    <button
+                      onClick={() => { setDetailsSubStep(0); setErrors({}) }}
+                      className="flex items-center gap-1 hover:text-sky-600 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      {form.renterName}
+                    </button>
+                  </div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleNext()}
+                    placeholder="e.g. john@example.com"
+                    autoFocus
+                    className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                      errors.email ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                    }`}
+                  />
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                </div>
+              )}
             </div>
           )}
 
