@@ -171,12 +171,14 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                       <span className="text-emerald-600 text-sm font-medium">Available for rental</span>
                     </div>
-                    <button
-                      onClick={() => onCheckout(headset.id)}
-                      className="w-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
-                    >
-                      Rent This Headset — ${headset.fee.toFixed(2)}
-                    </button>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => onCheckout(headset.id)}
+                        className="w-3/4 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
+                      >
+                        Rent This Headset — ${headset.fee.toFixed(2)}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
