@@ -254,7 +254,6 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                 </label>
                 <div className="space-y-3">
                   {[
-                    { value: 'credit_card', label: 'Credit / Debit Card', icon: '💳' },
                     { value: 'cash', label: 'Cash', icon: '💵' },
                     { value: 'apple_wallet', label: 'Apple Wallet', icon: null },
                   ].map(opt => {
