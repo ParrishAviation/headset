@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 
 const PIN_LENGTH = 4
 
-export default function AdminPinScreen({ pin, onSuccess, onCancel }) {
-  const ADMIN_PIN = pin || '1234'
+export default function AdminPinScreen({ pin: correctPin, onSuccess, onCancel }) {
+  const ADMIN_PIN = correctPin || '1234'
   const [pin, setPin] = useState('')
   const [error, setError] = useState(false)
   const [shake, setShake] = useState(false)
