@@ -15,8 +15,8 @@ const STAFF_PASSWORD = 'staff123'
 
 export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const [step, setStep] = useState(0)
-  const [detailsSubStep, setDetailsSubStep] = useState(0) // 0=name, 1=email
-  const [form, setForm] = useState({ renterName: '', email: '' })
+  const [detailsSubStep, setDetailsSubStep] = useState(0) // 0=firstName, 1=lastName, 2=email
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '' })
   const [paymentMethod, setPaymentMethod] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState({})
@@ -89,7 +89,9 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const validateDetails = () => {
     const e = {}
     if (detailsSubStep === 0) {
-      if (!form.renterName.trim()) e.renterName = 'Name is required'
+      if (!form.firstName.trim()) e.firstName = 'First name is required'
+    } else if (detailsSubStep === 1) {
+      if (!form.lastName.trim()) e.lastName = 'Last name is required'
     } else {
       if (!form.email.trim()) e.email = 'Email is required'
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email address'
@@ -110,9 +112,9 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
   const handleNext = () => {
     if (step === 0) {
       if (!validateDetails()) return
-      if (detailsSubStep === 0) {
+      if (detailsSubStep < 2) {
         setErrors({})
-        setDetailsSubStep(1)
+        setDetailsSubStep(s => s + 1)
         return
       }
     }
@@ -123,7 +125,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
 
   const handleConfirm = () => {
     if (!agreed) return
-    onConfirm({ ...form, paymentMethod })
+    onConfirm({ ...form, renterName: `${form.firstName} ${form.lastName}`, paymentMethod })
   }
 
   const handleSelectPayment = (value) => {
@@ -219,42 +221,77 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
             <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-slate-800">Renter Information</h2>
-                <span className="text-sm text-slate-400">{detailsSubStep + 1} of 2</span>
+                <span className="text-sm text-slate-400">{detailsSubStep + 1} of 3</span>
               </div>
+
+              {/* Breadcrumb trail of completed fields */}
+              {detailsSubStep > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => { setDetailsSubStep(0); setErrors({}) }}
+                    className="flex items-center gap-1 text-sm text-sky-600 hover:text-sky-800 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    {form.firstName}
+                  </button>
+                  {detailsSubStep > 1 && (
+                    <>
+                      <span className="text-slate-300">·</span>
+                      <button
+                        onClick={() => { setDetailsSubStep(1); setErrors({}) }}
+                        className="text-sm text-sky-600 hover:text-sky-800 transition-colors"
+                      >
+                        {form.lastName}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
 
               {detailsSubStep === 0 && (
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Full Name <span className="text-red-500">*</span>
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={form.renterName}
-                    onChange={e => setForm(f => ({ ...f, renterName: e.target.value }))}
+                    value={form.firstName}
+                    onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && handleNext()}
-                    placeholder="e.g. John Smith"
+                    placeholder="e.g. John"
                     autoFocus
                     className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                      errors.renterName ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                      errors.firstName ? 'border-red-400 bg-red-50' : 'border-slate-300'
                     }`}
                   />
-                  {errors.renterName && <p className="text-red-500 text-sm mt-1">{errors.renterName}</p>}
+                  {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                 </div>
               )}
 
               {detailsSubStep === 1 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-4 text-sm text-slate-500">
-                    <button
-                      onClick={() => { setDetailsSubStep(0); setErrors({}) }}
-                      className="flex items-center gap-1 hover:text-sky-600 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      {form.renterName}
-                    </button>
-                  </div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.lastName}
+                    onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleNext()}
+                    placeholder="e.g. Smith"
+                    autoFocus
+                    className={`w-full border rounded-xl px-4 py-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                      errors.lastName ? 'border-red-400 bg-red-50' : 'border-slate-300'
+                    }`}
+                  />
+                  {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+                </div>
+              )}
+
+              {detailsSubStep === 2 && (
+                <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                     Email Address <span className="text-red-500">*</span>
                   </label>
@@ -495,7 +532,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
               <h2 className="text-lg font-bold text-slate-800">Responsibility Agreement</h2>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3 text-sm text-slate-700 leading-relaxed max-h-72 overflow-y-auto">
                 <p className="font-bold text-amber-800">Please read carefully before accepting:</p>
-                <p>By accepting this rental agreement, <strong>{form.renterName}</strong> agrees to the following terms and conditions:</p>
+                <p>By accepting this rental agreement, <strong>{`${form.firstName} ${form.lastName}`}</strong> agrees to the following terms and conditions:</p>
                 <p><strong>1. Responsibility for Equipment:</strong> You accept full financial responsibility for the headset <strong>{headset.name}</strong> ({headset.model}) during the rental period. You are responsible for any damage, loss, or theft that occurs while the equipment is in your possession.</p>
                 <p><strong>2. Proper Use:</strong> You agree to use the headset only for its intended aviation purpose, handle it with care, and return it in the same condition it was provided.</p>
                 <p><strong>3. Damage Policy:</strong> In the event of damage, you will be liable for the full cost of repair or replacement. The replacement value of a headset ranges from $200 to $1,100 depending on the model.</p>
@@ -533,7 +570,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
               <h2 className="text-lg font-bold text-slate-800">Confirm Checkout</h2>
               <div className="space-y-2">
                 <SummaryRow label="Headset" value={`${headset.name} — ${headset.model}`} />
-                <SummaryRow label="Renter" value={form.renterName} />
+                <SummaryRow label="Renter" value={`${form.firstName} ${form.lastName}`} />
                 <SummaryRow label="Email" value={form.email} />
                 <SummaryRow label="Payment" value={{
                   credit_card: 'Credit / Debit Card',
