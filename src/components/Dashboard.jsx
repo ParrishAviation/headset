@@ -158,8 +158,12 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center">
-                          <HeadsetIcon className="w-7 h-7 text-sky-600" />
+                        <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center overflow-hidden">
+                          {headset.model.toLowerCase().includes('lightspeed') ? (
+                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-10 object-contain" />
+                          ) : (
+                            <HeadsetIcon className="w-7 h-7 text-sky-600" />
+                          )}
                         </div>
                         <div>
                           <div className="font-bold text-slate-800 text-lg">{headset.name}</div>
@@ -202,8 +206,12 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
-                          <HeadsetIcon className="w-7 h-7 text-amber-600" />
+                        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center overflow-hidden">
+                          {rental.headsetModel.toLowerCase().includes('lightspeed') ? (
+                            <img src="/lightspeed-logo.png" alt="Lightspeed" className="w-10 object-contain" />
+                          ) : (
+                            <HeadsetIcon className="w-7 h-7 text-amber-600" />
+                          )}
                         </div>
                         <div>
                           <div className="font-bold text-slate-800 text-lg">{rental.headsetName}</div>
