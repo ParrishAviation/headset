@@ -13,8 +13,16 @@ const INITIAL_HEADSETS = [
   { id: 'HS-04', name: 'David Clark B', model: 'David Clark H10-13.4', status: 'available', condition: 'Good', fee: 5.00 },
 ]
 
+const PIN_STORAGE_KEY = 'admin_pin'
+
 export default function App() {
   const [screen, setScreen] = useState('dashboard')
+  const [adminPin, setAdminPin] = useState(() => localStorage.getItem(PIN_STORAGE_KEY) || '1234')
+
+  const updateAdminPin = (newPin) => {
+    setAdminPin(newPin)
+    localStorage.setItem(PIN_STORAGE_KEY, newPin)
+  }
   const [headsets, setHeadsets] = useState(INITIAL_HEADSETS)
   const [rentals, setRentals] = useState([])
   const [selectedHeadset, setSelectedHeadset] = useState(null)
@@ -118,6 +126,7 @@ export default function App() {
       )}
       {screen === 'adminPin' && (
         <AdminPinScreen
+          pin={adminPin}
           onSuccess={() => setScreen('admin')}
           onCancel={() => setScreen('dashboard')}
         />
@@ -127,6 +136,8 @@ export default function App() {
           headsets={headsets}
           rentals={rentals}
           transactions={transactions}
+          adminPin={adminPin}
+          onPinChange={updateAdminPin}
           onBack={() => setScreen('dashboard')}
         />
       )}

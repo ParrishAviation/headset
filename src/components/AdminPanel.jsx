@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 function HeadsetIcon({ className }) {
   return (
@@ -17,7 +17,7 @@ const conditionColors = {
   Damaged: 'bg-red-100 text-red-700',
 }
 
-export default function AdminPanel({ headsets, rentals, transactions, onBack }) {
+export default function AdminPanel({ headsets, rentals, transactions, adminPin, onPinChange, onBack }) {
   const [tab, setTab] = useState('overview')
 
   const activeRentals = rentals.filter(r => r.status === 'active')
@@ -53,6 +53,7 @@ export default function AdminPanel({ headsets, rentals, transactions, onBack }) 
             { key: 'overview', label: 'Overview' },
             { key: 'rentals', label: `All Rentals (${rentals.length})` },
             { key: 'headsets', label: 'Headsets' },
+          { key: 'settings', label: 'Settings' },
           ].map(t => (
             <button
               key={t.key}
@@ -179,6 +180,10 @@ export default function AdminPanel({ headsets, rentals, transactions, onBack }) 
           </div>
         )}
 
+        {tab === 'settings' && (
+          <SettingsTab adminPin={adminPin} onPinChange={onPinChange} />
+        )}
+
         {tab === 'headsets' && (
           <div className="max-w-3xl">
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -221,6 +226,131 @@ export default function AdminPanel({ headsets, rentals, transactions, onBack }) 
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SettingsTab({ adminPin, onPinChange }) {
+  const PIN_LENGTH = 4
+  const [phase, setPhase] = useState('idle') // idle | entering-current | entering-new | entering-confirm
+  const [current, setCurrent] = useState('')
+  const [newPin, setNewPin] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => { if (phase !== 'idle') inputRef.current?.focus() }, [phase])
+
+  const reset = () => {
+    setPhase('idle'); setCurrent(''); setNewPin(''); setConfirm(''); setError(''); setSuccess(false)
+  }
+
+  const handleDigit = (digit) => {
+    setError('')
+    if (phase === 'entering-current') {
+      const next = (current + digit).slice(0, PIN_LENGTH)
+      setCurrent(next)
+      if (next.length === PIN_LENGTH) {
+        if (next !== adminPin) { setError('Incorrect current PIN'); setTimeout(() => { setCurrent(''); setError('') }, 600) }
+        else setPhase('entering-new')
+      }
+    } else if (phase === 'entering-new') {
+      const next = (newPin + digit).slice(0, PIN_LENGTH)
+      setNewPin(next)
+      if (next.length === PIN_LENGTH) setPhase('entering-confirm')
+    } else if (phase === 'entering-confirm') {
+      const next = (confirm + digit).slice(0, PIN_LENGTH)
+      setConfirm(next)
+      if (next.length === PIN_LENGTH) {
+        if (next !== newPin) { setError("PINs don't match. Try again."); setTimeout(() => { setNewPin(''); setConfirm(''); setPhase('entering-new'); setError('') }, 800) }
+        else { onPinChange(next); setSuccess(true); setTimeout(reset, 1500) }
+      }
+    }
+  }
+
+  const handleDelete = () => {
+    setError('')
+    if (phase === 'entering-current') setCurrent(p => p.slice(0, -1))
+    else if (phase === 'entering-new') setNewPin(p => p.slice(0, -1))
+    else if (phase === 'entering-confirm') setConfirm(p => p.slice(0, -1))
+  }
+
+  const activePin = phase === 'entering-current' ? current : phase === 'entering-new' ? newPin : confirm
+
+  const phaseLabel = {
+    'entering-current': 'Enter current PIN',
+    'entering-new': 'Enter new PIN',
+    'entering-confirm': 'Confirm new PIN',
+  }
+
+  return (
+    <div className="max-w-sm">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
+        <div>
+          <h2 className="font-bold text-slate-800 text-base">Admin PIN</h2>
+          <p className="text-slate-500 text-sm mt-1">Change the 4-digit PIN required to access the admin panel.</p>
+        </div>
+
+        {phase === 'idle' && !success && (
+          <button
+            onClick={() => setPhase('entering-current')}
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 rounded-xl transition-colors"
+          >
+            Change PIN
+          </button>
+        )}
+
+        {success && (
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+            <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-emerald-700 text-sm font-semibold">PIN updated successfully</span>
+          </div>
+        )}
+
+        {phase !== 'idle' && !success && (
+          <div className="space-y-4">
+            <p className="text-sm font-semibold text-slate-700">{phaseLabel[phase]}</p>
+
+            {/* Dots */}
+            <div className="flex justify-center gap-4">
+              {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+                <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${
+                  i < activePin.length ? error ? 'bg-red-500 border-red-500' : 'bg-sky-500 border-sky-500' : 'bg-transparent border-slate-300'
+                }`} />
+              ))}
+            </div>
+
+            {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+            {/* Hidden input for physical keyboard */}
+            <input ref={inputRef} type="tel" inputMode="numeric" className="sr-only"
+              onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(-1); if (d) handleDigit(d); e.target.value = '' }} />
+
+            {/* Numpad */}
+            <div className="grid grid-cols-3 gap-2">
+              {[1,2,3,4,5,6,7,8,9].map(n => (
+                <button key={n} onClick={() => handleDigit(String(n))}
+                  className="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-lg font-semibold transition-colors">
+                  {n}
+                </button>
+              ))}
+              <button onClick={reset} className="h-12 rounded-xl text-slate-400 hover:text-slate-600 text-sm transition-colors">Cancel</button>
+              <button onClick={() => handleDigit('0')}
+                className="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-lg font-semibold transition-colors">
+                0
+              </button>
+              <button onClick={handleDelete} className="h-12 rounded-xl text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
+              </button>
             </div>
           </div>
         )}
