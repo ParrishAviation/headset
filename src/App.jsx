@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard'
 import CheckoutFlow from './components/CheckoutFlow'
 import CheckinFlow from './components/CheckinFlow'
 import AdminPanel from './components/AdminPanel'
+import AdminPinScreen from './components/AdminPinScreen'
 import './index.css'
 
 const INITIAL_HEADSETS = [
@@ -97,7 +98,7 @@ export default function App() {
           rentals={rentals}
           onCheckout={handleCheckout}
           onCheckin={handleCheckin}
-          onAdmin={() => setScreen('admin')}
+          onAdmin={() => setScreen('adminPin')}
         />
       )}
       {screen === 'checkout' && (
@@ -113,6 +114,12 @@ export default function App() {
           headset={headsets.find(h => h.id === selectedRental?.headsetId)}
           onConfirm={confirmCheckin}
           onCancel={cancelFlow}
+        />
+      )}
+      {screen === 'adminPin' && (
+        <AdminPinScreen
+          onSuccess={() => setScreen('admin')}
+          onCancel={() => setScreen('dashboard')}
         />
       )}
       {screen === 'admin' && (
