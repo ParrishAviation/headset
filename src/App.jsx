@@ -92,6 +92,17 @@ export default function App() {
     setScreen('dashboard')
   }
 
+  const deleteRental = (rentalId) => {
+    const rental = rentals.find(r => r.id === rentalId)
+    if (rental && rental.status === 'active') {
+      setHeadsets(prev => prev.map(h =>
+        h.id === rental.headsetId ? { ...h, status: 'available', rentedTo: null } : h
+      ))
+    }
+    setRentals(prev => prev.filter(r => r.id !== rentalId))
+    setTransactions(prev => prev.filter(t => t.rentalId !== rentalId))
+  }
+
   const cancelFlow = () => {
     setSelectedHeadset(null)
     setSelectedRental(null)
@@ -139,6 +150,7 @@ export default function App() {
           transactions={transactions}
           adminPin={adminPin}
           onPinChange={updateAdminPin}
+          onDeleteRental={deleteRental}
           onBack={() => setScreen('dashboard')}
         />
       )}

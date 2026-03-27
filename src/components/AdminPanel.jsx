@@ -17,8 +17,10 @@ const conditionColors = {
   Damaged: 'bg-red-100 text-red-700',
 }
 
-export default function AdminPanel({ headsets, rentals, transactions, adminPin, onPinChange, onBack }) {
+export default function AdminPanel({ headsets, rentals, transactions, adminPin, onPinChange, onDeleteRental, onBack }) {
   const [tab, setTab] = useState('overview')
+  const [selectedRental, setSelectedRental] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const activeRentals = rentals.filter(r => r.status === 'active')
   const completedRentals = rentals.filter(r => r.status === 'returned')
@@ -149,10 +151,14 @@ export default function AdminPanel({ headsets, rentals, transactions, adminPin, 
                   </thead>
                   <tbody>
                     {[...rentals].reverse().map(r => (
-                      <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <tr
+                        key={r.id}
+                        onClick={() => { setSelectedRental(r); setConfirmDelete(false) }}
+                        className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                      >
                         <td className="px-5 py-3.5">
                           <div className="font-semibold text-slate-800">{r.renterName}</div>
-                          {r.studentId && <div className="text-slate-400 text-xs">{r.studentId}</div>}
+                          {r.email && <div className="text-slate-400 text-xs">{r.email}</div>}
                         </td>
                         <td className="px-5 py-3.5 text-slate-600">{r.headsetName}</td>
                         <td className="px-5 py-3.5 text-slate-600">{formatDateTime(r.checkoutTime)}</td>
@@ -230,6 +236,83 @@ export default function AdminPanel({ headsets, rentals, transactions, adminPin, 
           </div>
         )}
       </div>
+
+      {/* Rental detail drawer */}
+      {selectedRental && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => { setSelectedRental(null); setConfirmDelete(false) }}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md mx-6 overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800">Rental Detail</h2>
+              <button onClick={() => { setSelectedRental(null); setConfirmDelete(false) }} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Fields */}
+            <div className="px-6 py-5 space-y-3">
+              {[
+                ['Renter', selectedRental.renterName],
+                ['Email', selectedRental.email || '—'],
+                ['Headset', selectedRental.headsetName],
+                ['Model', selectedRental.headsetModel],
+                ['Payment', selectedRental.paymentMethod?.replace('_', ' ')],
+                ['Checked Out', formatDateTime(selectedRental.checkoutTime)],
+                ['Returned', selectedRental.checkinTime ? formatDateTime(selectedRental.checkinTime) : '—'],
+                ['Fee', `$${selectedRental.fee?.toFixed(2)}`],
+                ['Status', selectedRental.status === 'active' ? 'Currently Out' : 'Returned'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between items-baseline py-1 border-b border-slate-50 last:border-0">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{label}</span>
+                  <span className="text-sm font-medium text-slate-800 text-right max-w-xs capitalize">{value}</span>
+                </div>
+              ))}
+              {selectedRental.checkinNotes && (
+                <div className="pt-1">
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Return Notes</div>
+                  <div className="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2">{selectedRental.checkinNotes}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Delete */}
+            <div className="px-6 pb-6">
+              {!confirmDelete ? (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="w-full py-3 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+                >
+                  Delete Record
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-center text-slate-500">Are you sure? This cannot be undone.</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => { onDeleteRental(selectedRental.id); setSelectedRental(null); setConfirmDelete(false) }}
+                      className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
