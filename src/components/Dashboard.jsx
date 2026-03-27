@@ -129,11 +129,11 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
               </div>
 
               {/* CTA */}
-              <div style={{ padding: '0 16px 16px' }}>
+              <div style={{ padding: '0 16px 16px', display: 'flex', justifyContent: 'center' }}>
                 <button
                   onClick={() => onCheckout(headset.id)}
                   style={{
-                    width: '100%', padding: '14px',
+                    width: '60%', padding: '14px',
                     borderRadius: '8px',
                     background: '#fff', color: '#000',
                     fontSize: '13px', fontWeight: 700,
