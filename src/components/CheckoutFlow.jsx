@@ -31,6 +31,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin })
   const [squarePayConfirmed, setApplePayConfirmed] = useState(false)
   const [squarePayUrl, setApplePayUrl] = useState(null)
   const [squarePayOrderId, setApplePayOrderId] = useState(null)
+  const [squarePayLinkId, setApplePayLinkId] = useState(null)
   const [squarePayLoading, setApplePayLoading] = useState(false)
   const [squarePayError, setApplePayError] = useState(null)
   const pollRef = useRef(null)
@@ -58,6 +59,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin })
         if (data.error) throw new Error(data.error)
         setApplePayUrl(data.checkoutUrl)
         setApplePayOrderId(data.orderId)
+        setApplePayLinkId(data.linkId)
         setApplePayLoading(false)
       })
       .catch(err => {
@@ -66,13 +68,13 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin })
       })
   }, [paymentMethod, usesSquare])
 
-  // Poll for payment completion once we have an orderId
+  // Poll for payment completion once we have a linkId
   useEffect(() => {
-    if (!squarePayOrderId || squarePayConfirmed) return
+    if (!squarePayLinkId || squarePayConfirmed) return
 
     pollRef.current = setInterval(async () => {
       try {
-        const r = await fetch(`/api/square/payment-status/${squarePayOrderId}`)
+        const r = await fetch(`/api/square/payment-status/${squarePayLinkId}`)
         const data = await r.json()
         if (data.paid) {
           setApplePayConfirmed(true)
@@ -84,7 +86,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin })
     }, 3000)
 
     return () => clearInterval(pollRef.current)
-  }, [squarePayOrderId, squarePayConfirmed])
+  }, [squarePayLinkId, squarePayConfirmed])
 
   const validateDetails = () => {
     const e = {}
@@ -137,6 +139,7 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin })
     setApplePayConfirmed(false)
     setApplePayUrl(null)
     setApplePayOrderId(null)
+    setApplePayLinkId(null)
     setApplePayLoading(false)
     setApplePayError(null)
     clearInterval(pollRef.current)

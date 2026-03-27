@@ -63,27 +63,38 @@ app.post('/api/square/payment-link', async (req, res) => {
   }
 })
 
-// GET /api/square/payment-status/:orderId
-app.get('/api/square/payment-status/:orderId', async (req, res) => {
-  const { orderId } = req.params
+// GET /api/square/payment-status/:linkId
+// Square updates the original draft order in-place when paid.
+// A paid order has state OPEN with tenders, and net_amount_due_money.amount === 0.
+app.get('/api/square/payment-status/:linkId', async (req, res) => {
+  const { linkId } = req.params
   try {
-    const response = await square.orders.get({ orderId })
-    const order = response.order ?? response
-    const state = order?.state ?? 'UNKNOWN'
-    let paid = state === 'COMPLETED'
+    const TOKEN = SQUARE_ACCESS_TOKEN
 
-    if (!paid) {
-      try {
-        const paymentsResp = await square.payments.list({ orderId })
-        const payments = paymentsResp.payments ?? []
-        paid = payments.some(p => p.status === 'COMPLETED')
-      } catch {
-        // ignore secondary check failure
-      }
-    }
+    // Step 1: Get the order ID from the payment link
+    const linkResp = await fetch(
+      `https://connect.squareup.com/v2/online-checkout/payment-links/${linkId}`,
+      { headers: { Authorization: `Bearer ${TOKEN}` } }
+    )
+    const linkData = await linkResp.json()
+    const orderId = linkData?.payment_link?.order_id
+    if (!orderId) return res.json({ paid: false, status: 'UNKNOWN' })
 
-    console.log(`🔍 Order ${orderId} — state: ${state} paid: ${paid}`)
-    res.json({ paid, status: state })
+    // Step 2: Retrieve the order directly
+    const orderResp = await fetch(
+      `https://connect.squareup.com/v2/orders/${orderId}`,
+      { headers: { Authorization: `Bearer ${TOKEN}` } }
+    )
+    const orderData = await orderResp.json()
+    const order = orderData?.order
+
+    // Paid = has tenders (payments attached) AND no amount still due
+    const hasTenders = Array.isArray(order?.tenders) && order.tenders.length > 0
+    const amountDue = order?.net_amount_due_money?.amount ?? null
+    const paid = hasTenders && amountDue === 0
+
+    console.log(`🔍 Link ${linkId} order ${orderId} — state: ${order?.state}, tenders: ${order?.tenders?.length ?? 0}, amountDue: ${amountDue}, paid: ${paid}`)
+    res.json({ paid, status: order?.state ?? 'UNKNOWN' })
   } catch (err) {
     console.error('❌ payment-status error:', err?.errors ?? err.message)
     res.status(500).json({ error: err?.errors?.[0]?.detail ?? err.message ?? 'Failed to get payment status' })
