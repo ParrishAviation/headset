@@ -18,6 +18,11 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// Allow BigInt in JSON responses
+app.set('json replacer', (key, value) =>
+  typeof value === 'bigint' ? value.toString() : value
+)
+
 // POST /api/square/payment-link
 app.post('/api/square/payment-link', async (req, res) => {
   const { amount, label, headsetId } = req.body
@@ -32,7 +37,7 @@ app.post('/api/square/payment-link', async (req, res) => {
           name: label,
           quantity: '1',
           basePriceMoney: {
-            amount: Math.round(amount * 100),
+            amount: BigInt(Math.round(amount * 100)),
             currency: 'USD',
           },
         }],
