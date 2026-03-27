@@ -18,7 +18,7 @@ const HEADSET_ACCENT_BG = {
 
 function HeadsetLogo({ model }) {
   if (model.toLowerCase().includes('lightspeed'))
-    return <img src="/lightspeed-logo.png" alt="Lightspeed" className="max-h-full max-w-full object-contain" />
+    return <img src="/lightspeed-logo.png" alt="Lightspeed" className="max-h-full max-w-full object-contain p-5" />
   if (model.toLowerCase().includes('david clark'))
     return <img src="/davidclark-logo.png" alt="David Clark" className="max-h-full max-w-full object-contain p-4" />
   return null
