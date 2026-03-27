@@ -40,13 +40,13 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1a1a1a', fontFamily: F, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#f2f2f7', fontFamily: F, display: 'flex', flexDirection: 'column' }}>
 
       {/* ── Header ── */}
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 48px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 48px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <img src="/logo.png" alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '10px', objectFit: 'cover' }} />
-          <span style={{ color: '#fff', fontSize: '17px', fontWeight: 600, letterSpacing: '-0.03em' }}>Headset Rental</span>
+          <span style={{ color: '#1d1d1f', fontSize: '17px', fontWeight: 600, letterSpacing: '-0.03em' }}>Headset Rental</span>
         </div>
 
         {/* Tab nav — center */}
@@ -55,27 +55,27 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               background: 'none', border: 'none', cursor: 'pointer',
               padding: '6px 20px',
-              color: tab === t.key ? '#fff' : 'rgba(255,255,255,0.38)',
+              color: tab === t.key ? '#1d1d1f' : 'rgba(0,0,0,0.35)',
               fontSize: '13px', fontWeight: 600,
               letterSpacing: '0.05em', textTransform: 'uppercase',
-              borderBottom: tab === t.key ? '1.5px solid #fff' : '1.5px solid transparent',
+              borderBottom: tab === t.key ? '1.5px solid #1d1d1f' : '1.5px solid transparent',
               transition: 'color 0.18s, border-color 0.18s',
               fontFamily: F,
             }}>
               {t.label}
-              <span style={{ marginLeft: '6px', fontSize: '10px', opacity: 0.45 }}>{t.count}</span>
+              <span style={{ marginLeft: '6px', fontSize: '10px', opacity: 0.4 }}>{t.count}</span>
             </button>
           ))}
         </div>
 
         <button onClick={onAdmin} style={{
-          background: 'none', border: '1px solid rgba(255,255,255,0.18)', borderRadius: '6px',
-          color: 'rgba(255,255,255,0.55)', fontSize: '11px', fontWeight: 700,
+          background: 'none', border: '1px solid rgba(0,0,0,0.15)', borderRadius: '6px',
+          color: 'rgba(0,0,0,0.45)', fontSize: '11px', fontWeight: 700,
           letterSpacing: '0.1em', textTransform: 'uppercase', padding: '7px 16px',
           cursor: 'pointer', fontFamily: F, transition: 'border-color 0.2s, color 0.2s',
         }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.45)'; e.currentTarget.style.color = '#fff' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.35)'; e.currentTarget.style.color = '#1d1d1f' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.15)'; e.currentTarget.style.color = 'rgba(0,0,0,0.45)' }}
         >
           Admin
         </button>
@@ -90,13 +90,13 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
           const label = HEADSET_LABEL[headset.id] || ''
           return (
             <div key={headset.id} style={{
-              background: '#252525',
+              background: '#ffffff',
               borderRadius: '16px',
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid rgba(0,0,0,0.06)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.6)',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
             }}>
               {/* Color stripe — Tesla variant indicator */}
               <div style={{ height: '3px', background: color, width: '100%', opacity: 0.9 }} />
@@ -120,10 +120,10 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
 
               {/* Info strip */}
               <div style={{ padding: '16px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ color: 'rgba(0,0,0,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Rental fee
                 </span>
-                <span style={{ color: '#fff', fontSize: '24px', fontWeight: 700, letterSpacing: '-0.04em' }}>
+                <span style={{ color: '#1d1d1f', fontSize: '24px', fontWeight: 700, letterSpacing: '-0.04em' }}>
                   ${headset.fee.toFixed(2)}
                 </span>
               </div>
@@ -135,7 +135,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   style={{
                     width: '35%', padding: '14px',
                     borderRadius: '8px',
-                    background: '#fff', color: '#000',
+                    background: '#1d1d1f', color: '#fff',
                     fontSize: '13px', fontWeight: 700,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     border: 'none', cursor: 'pointer',
@@ -156,7 +156,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
 
         {tab === 'available' && available.length === 0 && (
           <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>All headsets are rented out</p>
+            <p style={{ color: 'rgba(0,0,0,0.25)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>All headsets are rented out</p>
           </div>
         )}
 
@@ -166,13 +166,13 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
           const label = HEADSET_LABEL[rental.headsetId] || ''
           return (
             <div key={rental.id} style={{
-              background: '#252525',
+              background: '#ffffff',
               borderRadius: '16px',
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid rgba(0,0,0,0.06)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.6)',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
             }}>
               <div style={{ height: '3px', background: color, width: '100%', opacity: 0.9 }} />
 
@@ -201,8 +201,8 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                   ['Fee paid', `$${rental.fee.toFixed(2)}`],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '9px' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{k}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: '13px', fontWeight: 600, letterSpacing: '-0.01em' }}>{v}</span>
+                    <span style={{ color: 'rgba(0,0,0,0.35)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{k}</span>
+                    <span style={{ color: '#1d1d1f', fontSize: '13px', fontWeight: 600, letterSpacing: '-0.01em' }}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -215,16 +215,16 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                     width: '100%', padding: '13px',
                     borderRadius: '8px',
                     background: 'transparent',
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'rgba(0,0,0,0.5)',
                     fontSize: '12px', fontWeight: 700,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(0,0,0,0.12)',
                     cursor: 'pointer',
                     transition: 'border-color 0.2s, color 0.2s',
                     fontFamily: F,
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.color = '#fff' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.3)'; e.currentTarget.style.color = '#1d1d1f' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)'; e.currentTarget.style.color = 'rgba(0,0,0,0.5)' }}
                 >
                   Return Headset
                 </button>
@@ -235,7 +235,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
 
         {tab === 'rented' && activeRentals.length === 0 && (
           <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>No headsets currently rented</p>
+            <p style={{ color: 'rgba(0,0,0,0.25)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>No headsets currently rented</p>
           </div>
         )}
 
