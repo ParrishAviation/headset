@@ -40,7 +40,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#000', fontFamily: F, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#1a1a1a', fontFamily: F, display: 'flex', flexDirection: 'column' }}>
 
       {/* ── Header ── */}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 48px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -90,7 +90,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
           const label = HEADSET_LABEL[headset.id] || ''
           return (
             <div key={headset.id} style={{
-              background: '#0d0d0d',
+              background: '#252525',
               borderRadius: '16px',
               border: '1px solid rgba(255,255,255,0.05)',
               overflow: 'hidden',
@@ -166,7 +166,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
           const label = HEADSET_LABEL[rental.headsetId] || ''
           return (
             <div key={rental.id} style={{
-              background: '#0d0d0d',
+              background: '#252525',
               borderRadius: '16px',
               border: '1px solid rgba(255,255,255,0.05)',
               overflow: 'hidden',
