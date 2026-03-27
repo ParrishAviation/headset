@@ -133,7 +133,7 @@ export default function Dashboard({ headsets, rentals, onCheckout, onCheckin, on
                 <button
                   onClick={() => onCheckout(headset.id)}
                   style={{
-                    width: '45%', padding: '14px',
+                    width: '35%', padding: '14px',
                     borderRadius: '8px',
                     background: '#fff', color: '#000',
                     fontSize: '13px', fontWeight: 700,
