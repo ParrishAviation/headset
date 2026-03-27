@@ -32,7 +32,7 @@ app.post('/api/square/payment-link', async (req, res) => {
           name: label,
           quantity: '1',
           basePriceMoney: {
-            amount: BigInt(Math.round(amount * 100)),
+            amount: Math.round(amount * 100),
             currency: 'USD',
           },
         }],
