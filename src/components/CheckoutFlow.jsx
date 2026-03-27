@@ -11,9 +11,9 @@ function HeadsetIcon({ className }) {
 }
 
 const STEPS = ['Details', 'Payment', 'Agreement', 'Confirm']
-const STAFF_PASSWORD = 'staff123'
+const PIN_LENGTH = 4
 
-export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
+export default function CheckoutFlow({ headset, onConfirm, onCancel, adminPin }) {
   const [step, setStep] = useState(0)
   const [detailsSubStep, setDetailsSubStep] = useState(0) // 0=firstName, 1=lastName, 2=email
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '' })
@@ -142,13 +142,15 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
     clearInterval(pollRef.current)
   }
 
-  const handleCashAuth = () => {
-    if (cashPassword === STAFF_PASSWORD) {
+  const handleCashAuth = (enteredPin) => {
+    const pin = enteredPin ?? cashPassword
+    if (pin === (adminPin || '1234')) {
       setCashAuthorized(true)
       setCashPasswordError('')
       setShowCashAuth(false)
+      setCashPassword('')
     } else {
-      setCashPasswordError('Incorrect password. Please try again.')
+      setCashPasswordError('Incorrect PIN. Try again.')
       setCashPassword('')
     }
   }
@@ -377,44 +379,68 @@ export default function CheckoutFlow({ headset, onConfirm, onCancel }) {
                         )}
                       </button>
 
-                      {/* Cash password prompt */}
+                      {/* Cash PIN prompt */}
                       {opt.value === 'cash' && paymentMethod === 'cash' && showCashAuth && (
                         <div className="mt-2 bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-3">
                           <div className="flex items-center gap-2 text-amber-800">
                             <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                             </svg>
-                            <p className="font-semibold text-sm">Staff authorization required for cash payment</p>
+                            <p className="font-semibold text-sm">Enter staff PIN to authorize cash payment</p>
                           </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-amber-700 mb-1.5">Staff Password</label>
-                            <input
-                              type="password"
-                              value={cashPassword}
-                              onChange={e => { setCashPassword(e.target.value); setCashPasswordError('') }}
-                              onKeyDown={e => e.key === 'Enter' && handleCashAuth()}
-                              placeholder="Enter staff password"
-                              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 ${
-                                cashPasswordError ? 'border-red-400 bg-red-50' : 'border-amber-300 bg-white'
-                              }`}
-                              autoFocus
-                            />
-                            {cashPasswordError && (
-                              <p className="text-red-600 text-xs mt-1 font-medium">{cashPasswordError}</p>
-                            )}
+
+                          {/* PIN dots */}
+                          <div className="flex justify-center gap-4 py-1">
+                            {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+                              <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${
+                                i < cashPassword.length
+                                  ? cashPasswordError ? 'bg-red-500 border-red-500' : 'bg-amber-600 border-amber-600'
+                                  : 'bg-transparent border-amber-400'
+                              }`} />
+                            ))}
                           </div>
-                          <div className="flex gap-2">
+                          {cashPasswordError && (
+                            <p className="text-red-600 text-xs text-center font-medium">{cashPasswordError}</p>
+                          )}
+
+                          {/* Numpad */}
+                          <div className="grid grid-cols-3 gap-2">
+                            {[1,2,3,4,5,6,7,8,9].map(n => (
+                              <button
+                                key={n}
+                                onClick={() => {
+                                  if (cashPassword.length < PIN_LENGTH) {
+                                    const next = cashPassword + String(n)
+                                    setCashPassword(next)
+                                    setCashPasswordError('')
+                                    if (next.length === PIN_LENGTH) handleCashAuth(next)
+                                  }
+                                }}
+                                className="h-11 rounded-xl bg-white border border-amber-200 text-slate-800 text-lg font-semibold hover:bg-amber-100 transition-colors"
+                              >{n}</button>
+                            ))}
                             <button
                               onClick={() => { setShowCashAuth(false); setPaymentMethod(''); setCashPassword(''); setCashPasswordError('') }}
-                              className="flex-1 text-sm border border-amber-300 text-amber-700 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors font-medium"
-                            >
-                              Cancel
-                            </button>
+                              className="h-11 rounded-xl text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-colors"
+                            >Cancel</button>
                             <button
-                              onClick={handleCashAuth}
-                              className="flex-1 text-sm bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg transition-colors font-semibold"
+                              onClick={() => {
+                                if (cashPassword.length < PIN_LENGTH) {
+                                  const next = cashPassword + '0'
+                                  setCashPassword(next)
+                                  setCashPasswordError('')
+                                  if (next.length === PIN_LENGTH) handleCashAuth(next)
+                                }
+                              }}
+                              className="h-11 rounded-xl bg-white border border-amber-200 text-slate-800 text-lg font-semibold hover:bg-amber-100 transition-colors"
+                            >0</button>
+                            <button
+                              onClick={() => { setCashPassword(p => p.slice(0, -1)); setCashPasswordError('') }}
+                              className="h-11 rounded-xl text-amber-700 hover:bg-amber-100 flex items-center justify-center transition-colors"
                             >
-                              Authorize
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                              </svg>
                             </button>
                           </div>
                         </div>

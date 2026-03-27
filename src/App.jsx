@@ -114,6 +114,7 @@ export default function App() {
           headset={selectedHeadset}
           onConfirm={confirmCheckout}
           onCancel={cancelFlow}
+          adminPin={adminPin}
         />
       )}
       {screen === 'checkin' && (
